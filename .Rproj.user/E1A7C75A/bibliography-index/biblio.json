@@ -1,0 +1,71 @@
+{
+    "sources": [
+        {
+            "DOI": "10.1016/j.cstp.2022.100942",
+            "URL": "https://linkinghub.elsevier.com/retrieve/pii/S2213624X22002425",
+            "author": [
+                {
+                    "family": "Ma",
+                    "given": "Winnie"
+                },
+                {
+                    "family": "Hoen",
+                    "given": "Fredrik S."
+                },
+                {
+                    "family": "Tørset",
+                    "given": "Trude"
+                }
+            ],
+            "container-title": "Case Studies on Transport Policy",
+            "id": "ma2023",
+            "issued": {
+                "date-parts": [
+                    [
+                        2023,
+                        3
+                    ]
+                ]
+            },
+            "language": "en",
+            "page": "100942",
+            "title": "No way back? A survey on changes in travel demand post-pandemic in Norway",
+            "type": "article-journal",
+            "volume": "11"
+        },
+        {
+            "DOI": "10.1016/j.cstp.2022.100942",
+            "URL": "https://linkinghub.elsevier.com/retrieve/pii/S2213624X22002425",
+            "author": [
+                {
+                    "family": "Ma",
+                    "given": "Winnie"
+                },
+                {
+                    "family": "Hoen",
+                    "given": "Fredrik S."
+                },
+                {
+                    "family": "Tørset",
+                    "given": "Trude"
+                }
+            ],
+            "container-title": "Case Studies on Transport Policy",
+            "id": "ma2023a",
+            "issued": {
+                "date-parts": [
+                    [
+                        2023,
+                        3
+                    ]
+                ]
+            },
+            "language": "en",
+            "page": "100942",
+            "title": "No way back? A survey on changes in travel demand post-pandemic in Norway",
+            "type": "article-journal",
+            "volume": "11"
+        }
+    ],
+    "project_biblios": []
+}

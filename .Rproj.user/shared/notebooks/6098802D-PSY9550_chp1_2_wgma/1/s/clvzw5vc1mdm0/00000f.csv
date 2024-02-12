@@ -1,0 +1,4 @@
+"0","plot( p_grid , posterior , "
+"0","      type=""b"" , "
+"0","      xlab=""probability of water"" , "
+"0","      ylab=""posterior probability"" ) "

@@ -1,0 +1,7 @@
+"0","# define prior, p for water
+prior <- p_grid %>% 
+  mutate(p_grid = ifelse(p_grid > 0.5, 1, 0))
+"
+"2","Error in UseMethod(""mutate"") : 
+  no applicable method for 'mutate' applied to an object of class ""c('double', 'numeric')""
+"
