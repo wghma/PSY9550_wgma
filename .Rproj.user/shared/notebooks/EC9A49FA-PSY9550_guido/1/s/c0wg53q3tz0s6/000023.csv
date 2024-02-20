@@ -1,5 +1,0 @@
-"0","# draw the background
-draw_pie()
-"
-"2","Error in draw_pie() : could not find function ""draw_pie""
-"

@@ -1,1 +1,0 @@
-{"frames":[{"func":"png(paste0(\"anim/\", sprintf(\"%03.f\", i), \".png\"), width = 700, \n    height = 700)","file":"","line_number":5,"end_line_number":6,"character_number":5,"end_character_number":34}],"message":"Error in png(paste0(\"anim/\", sprintf(\"%03.f\", i), \".png\"), width = 700,  : \n  unable to start png() device\n"}
