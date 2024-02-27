@@ -1,0 +1,151 @@
+---
+title: "PSY9550 Chapter 4"
+author: "Alexandra & Winnie"
+date: 02-27-2024     # Obs! American date format
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+
+# add other packages you use here
+```
+
+# Chapter 4 (all easy exercises)
+
+## 4E1 In the model definition below, which line is the likelihood?
+
+Answer: the first line. Predicted outcome given mu and sigma that are the priors.
+
+![](images/clipboard-1533791468.png)
+
+## 4E2. In the model definition just above, how many parameters are in the posterior distribution?
+
+Answer: two parameters, mu and sigma.
+
+## 4E3. Using the model definition above, write down the appropriate form of Bayes’ theorem that includes the proper likelihood and priors.
+
+Posterior distribution
+
+$$
+Pr(y | \mu, \sigma) = \frac{P(\mu, \sigma |y)*P(\mu)*P(\sigma)}{P(y)}
+$$
+
+## 4E4. In the model definition below, which line is the linear model?
+
+Answer: line number 2 is the linear model (mu_i = a + b\*x_i)
+
+![](images/clipboard-504557157.png)
+
+# Medium 4M1-4M4
+
+## 4M1. For the model definition below, simulate observed y values from the prior (not the posterior).
+
+![](images/clipboard-2410948196.png)
+
+```{r}
+N <- 1000
+
+mu <- rnorm(N, 0,10)
+sigma <- rexp(n = N, 1)
+y <- rnorm(1e4, mu, sigma)
+
+dens(y)
+
+```
+
+## 4M2. Translate the model just above into a quap formula.
+
+??
+
+```{r}
+# sim_prior <- quap(
+#   alist( y ~ dnorm( mu , sigma ) , 
+#            mu ~ dnorm( 0, 10 ) , 
+#            sigma ~ dexp(1 ) ), data = SomeDataFrame)
+```
+
+## 4M3. Translate the quap model formula below into a mathematical model definition.
+
+```{r}
+# flist <- alist( 
+#   y ~ dnorm( mu , sigma ), 
+#   mu <- a + b*x, 
+#   a ~ dnorm( 0 , 10 ), 
+#   b ~ dunif( 0 , 1 ), 
+#   sigma ~ dexp( 1 ) )
+```
+
+$$
+y_i \sim Normal(\mu_i, \sigma) \\
+\mu_i = a + b*(x_i-\bar{x}) \\
+a\sim Normal(0, 10) \\
+b \sim Uniform(0, 1) \\
+\sigma \sim Exponential(1)
+$$
+
+## 4M4.
+
+A sample of students is measured for height each year for 3 years. After the third year, you want to fit a linear regression predicting height using year as a predictor. Write down the mathematical model definition for this regression, using any variable names and priors you choose. Be prepared to defend your choice of priors.
+
+For this exercise, we'll construct a linear regression model that predicts the height of students based on the year of measurement. Let's denote height by (h), year by (y), and the student by an index (i).
+
+The linear model can be expressed as: $h_i = \alpha + \beta(y_i - \bar{y}) + \epsilon_i$
+
+Here, - (h_i) is the height of the student (i). - (y_i) is the year of measurement for student (i), and (\bar{y}) is the mean year across all measurements to center our predictor, which helps in interpretation and stability of the intercept term. - (\alpha) is the intercept term, representing the expected height when (y_i = \bar{y}). - (\beta) represents the change in height per year. - (\epsilon\_i) is the error term, which we assume follows a normal distribution with mean 0 and some standard deviation (\sigma), i.e., (\epsilon\_i \sim Normal(0, \sigma)).
+
+**Priors**: 1. **For (**\alpha) (Intercept): Assuming the average height for the central year might be around 150 cm (which is just a hypothetical average to start with and might need adjustment based on the actual data), we can set a broad prior to reflect this uncertainty. A reasonable prior for (\alpha) could be a Normal distribution centered around 150 cm with a wide standard deviation to account for the variation in average heights across populations and age groups. Thus, (\alpha \sim Normal(150, 20)).
+
+2.  **For (**\beta) (Slope): Given we expect students to grow over time, but without specific knowledge on the growth rate, a weakly informative prior would be prudent. Assuming growth could be positive and not excessively large on an annual basis, a Normal distribution centered at a small positive value could be suitable, such as (\beta \sim Normal(1, 2)). This indicates we expect some positive growth but are not sure about the exact rate.
+
+3.  **For (**\sigma) (Standard deviation of (\epsilon)): The choice of (\sigma) reflects our uncertainty about the deviation of observed heights from the line defined by our model. Without specific information, a broad prior like a Half-Cauchy could be used, which allows for a wide range of possible values while avoiding the extreme tails, e.g., (\sigma \sim HalfCauchy(5)). This choice is somewhat arbitrary and should be adjusted based on the scale of height measurements and the expected variation in growth patterns.
+
+**Defending the Priors**: - The choice of a Normal prior for (\alpha) is based on the assumption that the average height around the central year would not be extremely far from 150 cm, acknowledging variability. - For (\beta), the Normal prior reflects an expectation of positive growth with some uncertainty around the rate. It's weakly informative to allow the data to speak more strongly. - The HalfCauchy prior for (\sigma) is chosen because it's a common practice for scale parameters, providing flexibility while preventing the assignment of high probability to implausibly large values of (\sigma).
+
+This model, with its specified priors, provides a starting point for Bayesian linear regression analysis, allowing us to update these priors with data to obtain posterior distributions reflecting our updated beliefs about (\alpha), (\beta), and (\sigma).

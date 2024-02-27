@@ -1203,3 +1203,108 @@ shade( height.PI , weight.seq )
 The narrow shaded interval around the line is the distribution of mu.
 
 The wider shaded region represents the region within which the model expects to find 89% of actual heights in the population, at each weight.
+
+## 4.5 Curves from lines
+
+The models so far all assume that a straight line describes the relationship. But there’s nothing special about straight lines, aside from their simplicity. We’ll consider to commonplace methods that use the same essential linear regression approach to build curves. The first is polynomial regression. The second is b-splines.
+
+```{r}
+library(rethinking) 
+data(Howell1) 
+d <- Howell1
+
+str(d)
+```
+
+Go ahead and plot height against weight. The relationship is visibly curved, now that we’ve included the non-adult individuals. The most common polynomial regression is a parabolic model of the mean: mu_i = a+ b_1xi + b2xi\^2
+
+```{r}
+plot(height ~ weight, data = d)
+```
+
+![](images/clipboard-4226336805.png)
+
+The confusing issue here is assigning a prior for 2, the parameter on the squared value of x. Unlike 1, we don’t want a positive constraint. In the problems at the end of the chapter, you’ll use prior predictive simulation to understand why. These polynomial parameters are in general very difficult to set realistic priors for, which is another reason to avoid polynomial models.
+
+```{r}
+d <- Howell1
+# d <- d %>% 
+#   mutate(weight_s =  weight - mean(weight) /sd(weight),
+#         weight_s2 = weight_s^2 )
+# 
+d$weight_s <- ( d$weight - mean(d$weight) )/sd(d$weight)
+d$weight_s2 <- d$weight_s^2
+
+m4.5 <- quap(
+  alist( height ~ dnorm( mu , sigma ) , 
+         mu <- a + b1*weight_s + b2*weight_s2 , 
+         a ~ dnorm( 178 , 20 ) ,
+         b1 ~ dlnorm( 0 , 1 ) , 
+         b2 ~ dnorm( 0 , 1 ) , 
+         sigma ~ dunif( 0 , 50 ) ), data=d )
+
+precis( m4.5 )
+```
+
+Now, since the relationship between the outcome height and the predictor weight depends upon two slopes, b1 and b2, it isn’t so easy to read the relationship off a table of coefficients:
+
+```{r}
+weight.seq <- seq( from=-2.2 , to=2 , length.out=30 ) 
+pred_dat <- list( weight_s=weight.seq , weight_s2=weight.seq^2 ) 
+mu <- link( m4.5 , data=pred_dat ) 
+mu.mean <- apply( mu , 2 , mean )
+
+mu.PI <- apply( mu , 2 , PI , prob=0.89 )
+sim.height <- sim( m4.5 , data=pred_dat ) 
+height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
+
+# then we plot
+
+plot( height ~ weight_s , d , col=col.alpha(rangi2,0.5) ) 
+lines( weight.seq , mu.mean ) 
+shade( mu.PI , weight.seq ) 
+shade( height.PI , weight.seq )
+```
+
+Now also a cubic regression, order 3. Which basically means it can bend at 3 points
+
+```{r}
+d$weight_s3 <- d$weight_s^3 
+m4.6 <- quap( 
+  alist( height ~ dnorm( mu , sigma ) , 
+                     mu <- a + b1*weight_s + b2*weight_s2 + b3*weight_s3 ,
+         a ~ dnorm( 178 , 20 ) ,
+         b1 ~ dlnorm( 0 , 1 ) ,
+         b2 ~ dnorm( 0 , 10 ) , 
+         b3 ~ dnorm( 0 , 10 ) , 
+         sigma ~ dunif( 0 , 50 )), data = d)
+
+weight.seq <- seq( from=-2.2 , to=2 , length.out=30 ) 
+pred_dat <- list( weight_s=weight.seq , weight_s2=weight.seq^2 , weight_s3= weight.seq^3) 
+
+mu <- link( m4.6 , data=pred_dat ) 
+mu.mean <- apply( mu , 2 , mean )
+
+mu.PI <- apply( mu , 2 , PI , prob=0.89 )
+sim.height <- sim( m4.6 , data=pred_dat ) 
+height.PI <- apply( sim.height , 2 , PI , prob=0.89 )
+
+
+
+plot( height ~ weight_s , d , col=col.alpha(rangi2,0.5) ) 
+mtext("cubic")
+lines( weight.seq , mu.mean ) 
+shade( mu.PI , weight.seq ) 
+shade( height.PI , weight.seq )
+```
+
+### b-splines = zig-zag curves (b for basic)
+
+```{r}
+library(rethinking) 
+data(cherry_blossoms) 
+d <- cherry_blossoms 
+precis(d)
+```
+
+The short explanation of B-splines is that they divide the full range of some predictor variable, like year, into parts. Then they assign a parameter to each part. These parameters are gradually turned on and off in a way that makes their sum into a fancy, wiggly curve.
