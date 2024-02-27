@@ -1,0 +1,3 @@
+"0",""
+"0","# draw HPDI region for line "
+"0","shade( mu.HPDI , weight.seq ) "

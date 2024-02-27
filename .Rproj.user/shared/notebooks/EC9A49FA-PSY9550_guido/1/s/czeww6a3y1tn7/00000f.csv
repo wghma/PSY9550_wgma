@@ -1,0 +1,2 @@
+"0","m4.1 <- quap( flist , data=d2 )"
+"0","precis( m4.1 )"

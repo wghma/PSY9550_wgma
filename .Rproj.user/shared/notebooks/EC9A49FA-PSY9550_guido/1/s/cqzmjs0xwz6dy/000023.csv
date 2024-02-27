@@ -1,0 +1,2 @@
+"0","# plot a shaded region for 89% PI "
+"0","shade( mu.PI , weight.seq )"

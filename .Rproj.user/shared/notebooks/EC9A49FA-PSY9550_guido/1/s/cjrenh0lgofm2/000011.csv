@@ -1,0 +1,2 @@
+"0","# plot the MAP line, aka the mean mu for each weight "
+"0","lines( weight.seq , mu.mean ) "

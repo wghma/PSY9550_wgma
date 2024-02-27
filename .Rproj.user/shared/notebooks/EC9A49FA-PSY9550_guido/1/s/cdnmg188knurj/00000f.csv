@@ -1,0 +1,8 @@
+"0","posterior = posterior / sum(posterior)"
+"0","posterior_samples = "
+"0","  sample(p_grid,5000, prob = posterior, replace = TRUE)"
+"0","predictions.dist = rbinom(5000,n_total, prob = posterior_samples)"
+"0","simplehist("
+"0","  predictions.dist,"
+"0","  xlab = ""# predicted water tosses"","
+"0","  main = ""Bad posterior predictive distribution (I)"")"

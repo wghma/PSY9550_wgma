@@ -1,0 +1,6 @@
+"0","m4.2 <- quap( alist( "
+"0","  height ~ dnorm( mu , sigma ) , "
+"0","  mu ~ dnorm( 178 , 0.1 ) , "
+"0","  sigma ~ dunif( 0 , 50 ) ) , data=d2 ) "
+"0",""
+"0","precis( m4.2 )"

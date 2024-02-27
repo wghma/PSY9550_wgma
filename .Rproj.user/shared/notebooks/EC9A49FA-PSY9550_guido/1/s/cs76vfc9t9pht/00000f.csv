@@ -1,0 +1,25 @@
+"0","library(rethinking) 
+"
+"2","Loading required package: parallel
+"
+"2","rethinking (Version 2.13.2)
+"
+"2","
+Attaching package: ‘rethinking’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    map
+
+"
+"2","The following object is masked from ‘package:stats’:
+
+    rstudent
+
+"
+"0","library(rethinking) "
+"0","data(Howell1) "
+"0","library(rethinking) "
+"0","data(Howell1) "
+"0","d <- Howell1"

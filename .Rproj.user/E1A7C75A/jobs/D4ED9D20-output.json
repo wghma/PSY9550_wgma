@@ -1,0 +1,3 @@
+[1,"==> quarto preview PSY9550_guido.qmd --to html --no-watch-inputs --no-browse\n\n"]
+[1,"\r\n\r\nprocessing file: PSY9550_guido.qmd\r\n"]
+[1,"(*) NOTE: I saw chunk options \"echo=F, warning=F, eval=FALSE} Sys.setlocale(locale='no_NB.utf8')\"\r\n please go to https://yihui.org/knitr/options\r\n (it is likely that you forgot to quote \"character\" options)\r\nError in parse(text = code, keep.source = FALSE) : \r\n  <text>:1:37: unexpected '}'\r\n1: alist( echo=F, warning=F, eval=FALSE}\r\n                                        ^\r\nCalls: .main ... parse_params -> withCallingHandlers -> eval -> parse_only -> parse\r\nExecution halted\r\n"]

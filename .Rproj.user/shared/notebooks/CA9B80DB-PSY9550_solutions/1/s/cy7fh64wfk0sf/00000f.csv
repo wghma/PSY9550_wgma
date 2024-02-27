@@ -1,0 +1,7 @@
+"0","biased_globe <- function(tosses = 100, true_prop = 0.7, bias = 0.2) {"
+"0","  true_trials <- rbinom(n = tosses, size = 1, prob = true_prop)"
+"0","  bias_sim <- runif(n = tosses, min = 0, max = 1) # uniform random draw between 0-1. Da skal ca 20% av dataene være under 0.2."
+"0","  bias_trials <- true_trials"
+"0","  bias_trials[which(bias_sim < bias)] <- 0L # 0 = land. 1 = water. Der random bias er under 0.2 MEN blir ikke dette feil, når oppgaven sier at 20% av WATER samples er Land, og ikke en trekning av 20% av alle samples blir gjort til land."
+"0","  sum(bias_trials)"
+"0","}"

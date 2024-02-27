@@ -1,0 +1,12 @@
+"0","set.seed(2971) "
+"0","N <- 100 # 100 lines "
+"0","a <- rnorm( N , 178 , 20 ) "
+"0","b <- rlnorm( N , 0 , 1 )"
+"0","xbar <- mean(d2$weight) "
+"0",""
+"0","plot( NULL , xlim=range(d2$weight) , ylim=c(-100,400) , xlab=""weight"" , ylab=""height"" ) +"
+"0","abline( h=0 , lty=2 ) +"
+"0","abline( h=272 , lty=1 , lwd=0.5 ) +"
+"0","mtext( ""b ~ dnorm(0,10)"" )"
+"1","integer(0)
+"
