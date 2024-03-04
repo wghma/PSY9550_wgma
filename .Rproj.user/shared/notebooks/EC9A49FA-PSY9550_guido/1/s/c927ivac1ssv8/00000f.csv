@@ -1,0 +1,7 @@
+"0","# but now scaled"
+"0","d %>% "
+"0","  group_by(clade) %>% "
+"0","  # summarise(avg_kcal = mean(kcal.per.g, na.rm = T),"
+"0","  #           sd_kcal = sd(kcal.per.g)) %>% "
+"0","  ggplot(aes(y=clade, x = K)) +"
+"0","  geom_boxplot()"

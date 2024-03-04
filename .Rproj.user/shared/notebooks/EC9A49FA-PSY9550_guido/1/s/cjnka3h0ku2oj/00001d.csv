@@ -1,0 +1,6 @@
+"0","xseq <- seq( from=min(dcc$M)-0.15 , to=max(dcc$M)+0.15 , length.out=30 ) "
+"0","mu <- link( m5.6 , data=list(M=xseq) ) "
+"0","mu_mean <- apply(mu,2,mean) "
+"0","mu_PI <- apply(mu,2,PI) "
+"0",""
+"0","plot( K ~ M , data=dcc ) "

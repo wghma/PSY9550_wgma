@@ -1,0 +1,5 @@
+"0","d %>% "
+"0","  mutate(Loc_nonFac = as.character(Loc)) %>% "
+"0","  ggplot(aes(x = WaffleHouses, y = Divorce, label = Loc_nonFac)) +"
+"0","  geom_point(aes(color = South), size = 3) +"
+"0","  geom_smooth(method = ""lm"")"

@@ -1,0 +1,1 @@
+"0","plot( coeftab( m5.5 , m5.6 , m5.7 ) , pars=c(""bM"",""bN"") )"

@@ -1,0 +1,1 @@
+"0","shade( apply(s$weight_std,2,PI) , sim_dat$avgfood_std )"

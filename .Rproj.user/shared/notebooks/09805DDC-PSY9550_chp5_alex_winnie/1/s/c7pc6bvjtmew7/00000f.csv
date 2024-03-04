@@ -1,0 +1,6 @@
+"0","plot( coeftab(body_area_model,"
+"0","              body_grsize_model,"
+"0","              body_area_grsize_model,"
+"0","              body_food_grsize_model,"
+"0","              body_food_grsize_area_model"
+"0","              ), par=c(""b_a"",""b_size"", ""b_food"") )  "

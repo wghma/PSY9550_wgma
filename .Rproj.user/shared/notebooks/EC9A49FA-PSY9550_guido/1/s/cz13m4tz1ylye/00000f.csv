@@ -1,0 +1,5 @@
+"0","library(dagitty) "
+"2","Warning: package 'dagitty' was built under R version 4.3.2"
+"0","dag5.1 <- dagitty( ""dag { A -> D A -> M M -> D }"") "
+"0","coordinates(dag5.1) <- list( x=c(A=0,D=1,M=2) , y=c(A=0,D=1,M=0) ) "
+"0","drawdag( dag5.1 )"

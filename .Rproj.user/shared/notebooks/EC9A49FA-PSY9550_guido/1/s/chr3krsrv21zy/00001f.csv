@@ -1,0 +1,13 @@
+"0","m5.3_AD <- quap(
+  alist(
+    # A -> D <- M
+    D ~ dnorm( mu , sigma ) ,
+    mu <- a + bM*M + bA*A ,
+    a ~ dnorm( 0 , 0.2 ) ,
+    bM ~ dnorm( 0 , 0.5 ) ,
+    bA ~ dnorm( 0 , 0.5 ) ,
+    sigma ~ dexp( 1 ),
+  ) , data = d )
+"
+"2","Error in eval(flist[[i]]) : argument is missing, with no default
+"
