@@ -1,0 +1,6 @@
+"0","# simulate prior"
+"0","sim_p <- rlnorm( 1e4 , 0 , 0.25 ) "
+"0","precis( data.frame(sim_p) )"
+"1","'data.frame': 10000 obs. of 1 variables:"
+"1","
+"

@@ -1,0 +1,12 @@
+"0","library(dagitty) "
+"0","dag_6.1 <- dagitty( ""dag { "
+"0","U [unobserved] "
+"0","                    X -> Y "
+"0","                    X <- U <- A -> C -> Y "
+"0","                    U -> B <- C "
+"0","                    }"") "
+"0","adjustmentSets( dag_6.1 , exposure=""X"" , outcome=""Y"" )"
+"1","{ C }
+"
+"1","{ A }
+"
