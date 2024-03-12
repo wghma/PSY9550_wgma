@@ -1,0 +1,263 @@
+---
+title: "PSY9550 Chapter 6"
+author: "Alexandra & Winnie"
+date: 03-14-2024     # Obs! American date format
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+library(dagitty)
+
+# add other packages you use here
+```
+
+# Clarification and or discussion questions
+
+Did not fully understand 6M3. Guessed the wrong answer each time, for all the four DAGs. See the subchapter 6M3.
+
+# Easy
+
+## 6E1.
+
+**List three mechanisms by which multiple regression can produce false inferences about causal effects.**
+
+1.  Multicollinearity. When several variables are correlated to each other and putting them into the model without accounting for this may wrongly assign the effects of the predictors. Think of the height \~ left leg + right leg problem.
+
+2.  Post-treatment bias. When we add a post-treatment predictor variable (a variable that is conditional on the treatment variable), it might wrongly "absorb" the effects of the treatment variable, like in the case of the growth height \~ fungus + treatment case, the treatment variable was estimated to have 0 effect on growth which was wrong. This happened when the model included the fungus variable ( a post-treatment variable).
+
+3.  Collider bias. When two variables, which are independent of each other, happen to affect a common variable (a collider), having a model that take into account all three variables will make it look like the two independent variables affect each other.
+
+## 6E2.
+
+**For one of the mechanisms in the previous problem, provide an example of your choice, perhaps from your own research.**
+
+Multi-collinearity may happen quite easily in transport habit research. Lets say we want to make a model that estimate the the predicorts effect on the probability of having the car as a primary transport mode. Some person-related variables that we may find relevant is car ownership and average daily travel distance. We might already understand that mileage and car ownership is correlated (maybe with the unobserved variable of travel demand / destinations behind both of them).
+
+## 6E3.
+
+**List the four elemental confounds. Can you explain the conditional dependencies of each?**
+
+1.  The Fork. When one variable affects two variables that are independent of each other. In the DAG below B is the common cause between A and C, which are not causal each other. A model with only A and C may detect a relation between them, but then including the actual confounding variable B, it will correctly detect A-C as zero.
+
+    ```{r}
+    dag_fork <- dagitty( "dag {
+                        A <- B -> C 
+                        }") 
+    coordinates( dag_fork ) <- list( 
+      x=c(A=0,B=1,C=2) , 
+      y=c(A=0,B=0,C=0) ) 
+
+    drawdag( dag_fork )
+    ```
+
+2.  The Pipe. When variables affect each other like a one-way path, no variables having more than one causal relation. The pipe may have the same model situation as the Fork, that B should be included in the model to avoid the model to assign the effect of B-C onto A-C.
+
+    ```{r}
+    dag_pipe <- dagitty( "dag {
+                        A -> B -> C 
+                        }") 
+    coordinates( dag_pipe ) <- list( 
+      x=c(A=0,B=1,C=2) , 
+      y=c(A=0,B=0,C=0) )
+    drawdag( dag_pipe )
+    ```
+
+3.  The Collider. When two non-causal variables affect the same confounding variable. This situation is a bit different than with the Fork and Pipe, as when including confounding variable B in the model will make it look like there is a causal relation between A and C.
+
+    ```{r}
+    dag_collider <- dagitty( "dag {
+                        A -> B <- C 
+                        }") 
+    coordinates( dag_collider ) <- list( 
+      x=c(A=0,B=1,C=2) , 
+      y=c(A=0,B=0,C=0) )
+    drawdag( dag_collider )
+    ```
+
+4.  The Descendant. ABC is a collider situation, and including D in a model with ACD, will make the D act like a weak B, and make it look like there is a causal relation between A and C when there is none.
+
+```{r}
+dag_desc<- dagitty( "dag {
+                    A -> B <- C 
+                    B -> D
+                    }") 
+coordinates( dag_desc ) <- list( 
+  x=c(A=0,B=1,C=1, D=2) , 
+  y=c(A=0,B=0,C=0.5, D=0) )
+drawdag( dag_desc )
+```
+
+## 6E4.
+
+**How is a biased sample like conditioning on a collider? Think of the example at the open of the chapter.**
+
+The example in the intro of the chapter:
+
+Variables: trustworthiness, newsworthiness, selected for funding (top 10%) \<- collider
+
+The model conditioning on the collider: trustworthiness \~ newsworthiness + funding. The text mentioned that there were found a -0.77 relation between trustworthiness and newsworthiness among FUNDED proposals. The bias is that this sample is a skewed selected sample based upon the top 10% rank requirement of all proposals (when ranking for trustworthiness and newsworthiness).
+
+# Medium
+
+## 6M1.
+
+**Modify the DAG on page 186 to include the variable V, an unobserved cause of C and Y: C \<- V -\>Y**.
+
+**Reanalyze the DAG. How many paths connect X to Y? Which must be closed? Which variables should you condition on now?**
+
+Paths that connect X and Y:
+
+1.  X -\> Y
+
+2.  X \<- U -\> B \<- C -\> Y. This one includes two forks, U and C, or depending on how we see it, a collider B. We would not want to open this closed path (colliders = already closed).
+
+3.  X \<- U \<- A -\> C -\> Y. This one includes fork A and many pipes. Would want to control for A and C.
+
+    Paths through V:
+
+4.  X \<- U -\> B \<- C \<- V-\> Y. This one includes B as a collider and V as a fork. V is unobserved, so cannot condition on it, and would not want to open up a path by including B in our model.
+
+5.  X \<- U \<- A -\> C \<- V-\> Y. This one has fork A...or collider C, not sure how to read these confounding situations, maybe both? And V fork.
+
+This is messy. But by running the adjustmentSets() function it recommends us to make a model that controls for variable A.
+
+```{r}
+dag_2roads <- dagitty( "dag {
+U [unobserved] 
+V [unobserved]
+                       X -> Y 
+                       X <- U <- A -> C -> Y 
+                       U -> B <- C 
+                       C <- V -> Y
+                       }")
+coordinates( dag_2roads ) <- list( 
+  x=c(A=1,B=1,X=0, C=2, Y=2, U=0, V=2.5) , 
+  y=c(A=-1,B=0,X=0.5, C=-0.5,Y=0.5, U=-0.5, V=0) )
+
+drawdag(dag_2roads)
+```
+
+```{R}
+adjustmentSets( dag_2roads , exposure="X" , outcome="Y" )
+```
+
+## **6M2.** (not answered)
+
+Sometimes, in order to avoid multicollinearity, people inspect pairwise correlations among predictors before including them in a model. This is a bad procedure, because what matters is the conditional association, not the association before the variables are included in the model. To highlight this, consider the DAG X -\> Z -\> Y. Simulate data from this DAG so that the correlation between X and Y is very large. Then include both in a model prediction Y. Do you observe any multicollinearity? Why or why not? What is different from the legs example in the chapter?
+
+## **6M3.**
+
+**Learning to analyze DAGs requires practice. For each of the four DAGs below, state which variables, if any, you must adjust for (condition on) to estimate the total causal influence of X and Y.**
+
+![](images/clipboard-3639952248.png)
+
+-   Upper left.
+
+    Paths from X to Y: (1) X-\>Y. (2) X \<- Z -\> Y. (3) X \<- Z \<- A -\> Y
+
+    Path (2) and (3) has each an open door. (2) got one fork, (3) got a fork and a pipe. Would guess, that conditioning on A and Z would be sufficient. The adjustmentSets() function gives just Z.
+
+    ```{r}
+    dag_upperL <- dagitty("dag{ 
+                    X <- Z <- A -> Y <- X
+                    Y <- Z 
+                    }")
+    adjustmentSets(dag_upperL, exposure = "X", outcome = "Y")
+    ```
+
+-   Upper right.
+
+    Paths from X to Y: (1) X-\>Y. (2) X -\> Z -\> Y. (3) X -\> Z \<- A -\> Y
+
+    Z is a collider, so we do not include Z. A is fork. We condition for A. Well, the adjustmentSets() function says we do not need to condition for anything.
+
+    ```{r}
+    dag_upperR <- dagitty("dag{ 
+                    X -> Z <- A -> Y <- X
+                    Y <- Z 
+                    }")
+    adjustmentSets(dag_upperR, exposure = "X", outcome = "Y")
+    ```
+
+-   Lower left.
+
+    ![](images/clipboard-3420430352.png)
+
+Paths from X to Y: (1) X-\>Y. (2) X -\> Z \<- Y. (3) X \<- A -\> Z \<- Y
+
+Z is a collider, so we do not condition for it. But yeah, what about A being a fork? Well, wrong again according to adjustmentSets(). There is no need for conditioning?
+
+```{r}
+dag_lowerL <- dagitty("dag{ 
+ X -> Y
+ X -> Z <- Y
+ X <- A -> Z <- Y
+
+                }")
+adjustmentSets(dag_lowerL, exposure = "X", outcome = "Y")
+```
+
+-   Lower right.
+
+![](images/clipboard-3295790536.png)
+
+Paths from X to Y: (1) X-\>Y. (2) X -\> Z -\> Y. (3) X \<- A -\> Z -\> Y
+
+No colliders, just A being a fork. XYZ is just a pipe. Hmm, condition for Z then, since it covers for both path 2 and 3? Damn it, the adjustmentSets() say A. What is the difference between this situation and the upper left one in respect to forks?
+
+```{r}
+dag_lowerR <- dagitty("dag{ 
+ X -> Y
+ X -> Z ->  Y
+ X <- A -> Z ->  Y
+
+                }")
+adjustmentSets(dag_lowerR, exposure = "X", outcome = "Y")
+```

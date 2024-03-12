@@ -1,0 +1,8 @@
+"0","dag_desc<- dagitty( ""dag {"
+"0","                    A -> B <- C "
+"0","                    B -> D"
+"0","                    }"") "
+"0","coordinates( dag_desc ) <- list( "
+"0","  x=c(A=0,B=1,C=1, D=2) , "
+"0","  y=c(A=0,B=0,C=0.5, D=0) )"
+"0","drawdag( dag_desc )"

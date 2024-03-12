@@ -1,0 +1,7 @@
+"2","Warning in gsub(""^\\s+|\\s+$"", """", y) :"
+"2","
+ "
+"2"," unable to translate '<e2>\u0096\u0081<e2>\u0096\u0081<e2>\u0096\u0083<e2>\u0096\u0087<e2>\u0096\u0087<e2>\u0096\u0083<e2>\u0096\u0081<e2>\u0096\u0081<e2>\u0096\u0081<e2>\u0096\u0081<e2>\u0096\u0081<e2>\u0096\u0081' to a wide string
+"
+"2","Error in gsub(""^\\s+|\\s+$"", """", y) : input string 1 is invalid
+"

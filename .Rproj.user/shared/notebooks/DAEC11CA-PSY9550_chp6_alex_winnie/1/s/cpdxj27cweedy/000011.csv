@@ -1,0 +1,7 @@
+"0","    dag_pipe <- dagitty( ""dag {"
+"0","                        A -> B -> C "
+"0","                        }"") "
+"0","    coordinates( dag_pipe ) <- list( "
+"0","      x=c(A=0,B=1,C=2) , "
+"0","      y=c(A=0,B=0,C=0) )"
+"0","    drawdag( dag_pipe )"

@@ -1,0 +1,7 @@
+"0","    dag_upperL <- dagitty(""dag{ "
+"0","                    X <- Z <- A -> Y <- X"
+"0","                    Y <- Z "
+"0","                    }"")"
+"0","    adjustmentSets(dag_upperL, exposure = ""X"", outcome = ""Y"")"
+"1","{ Z }
+"
