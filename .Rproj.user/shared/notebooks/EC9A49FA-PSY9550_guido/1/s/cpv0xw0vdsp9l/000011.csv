@@ -1,4 +1,0 @@
-"0","post <- extract.samples( m4.3 ) "
-"0","a_map <- mean(post$a) "
-"0","b_map <- mean(post$b) "
-"0","curve( a_map + b_map*(x - xbar) , add=TRUE )"

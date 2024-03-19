@@ -1,3 +1,0 @@
-"0","d$K <- scale( d$kcal.per.g ) "
-"0","d$N <- scale( d$neocortex.perc )"
-"0","d$M <- scale( log(d$mass) )"

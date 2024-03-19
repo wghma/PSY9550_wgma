@@ -1,1 +1,0 @@
-"0","for ( i in 1:50 ) lines( c(-2,2) , mu[i,] , col=col.alpha(""black"",0.4) )"

@@ -1,4 +1,0 @@
-"0",""
-"0",""
-"0","# fading out points to make line and interval more visible "
-"0","plot( height ~ weight , data=d2 , col=col.alpha(rangi2,0.5) ) "

@@ -1,7 +1,0 @@
-"0","library(rethinking)"
-"0","data(""WaffleDivorce"")"
-"0","d <- WaffleDivorce"
-"0","precis(d)"
-"1","'data.frame': 50 obs. of 13 variables:"
-"1","
-"

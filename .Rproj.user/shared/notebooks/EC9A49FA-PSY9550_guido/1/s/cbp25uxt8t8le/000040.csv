@@ -1,3 +1,0 @@
-"0","for ( i in 1:N ) curve( a[i] + b[i]*(x - xbar) , "
-"0","                        from=min(d2$weight) , "
-"0","                        to=max(d2$weight) , add=TRUE , col=col.alpha(""black"",0.2) )"

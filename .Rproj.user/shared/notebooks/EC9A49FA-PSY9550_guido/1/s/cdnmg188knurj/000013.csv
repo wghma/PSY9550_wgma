@@ -1,1 +1,0 @@
-"0","points(round(mean(predictions.dist)),0, col = ""red"", pch = 16, cex = 2)"

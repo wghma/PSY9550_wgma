@@ -1,6 +1,0 @@
-"0","post <- extract.samples( m4.3 )"
-"0","xbar <- mean(d2$weight) "
-"0","mu_at_50 <- post$a + post$b * ( 50 - xbar )"
-"0",""
-"0",""
-"0","dens( mu_at_50 , col=rangi2 , lwd=2 , xlab=""mu|weight=50"" )"

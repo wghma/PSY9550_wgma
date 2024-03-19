@@ -1,1 +1,0 @@
-"0","  curve( a_avg + b_avg*(x -  mean(dN$weight)) , add=TRUE ,  col=col.alpha(""red"",1))"

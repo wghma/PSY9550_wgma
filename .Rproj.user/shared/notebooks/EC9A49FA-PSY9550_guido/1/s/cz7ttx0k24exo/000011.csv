@@ -1,6 +1,0 @@
-"0","post <- extract.samples(m5.8, 1e4) "
-"0","post$diff_fm <- post$a[,1] - post$a[,2] "
-"0","precis( post , depth=2)"
-"1","quap posterior: 10000 samples from m5.8"
-"1","
-"

@@ -1,2 +1,0 @@
-"0","post <- extract.samples( m4.1 , n=1e4 ) "
-"0","head(post)"

@@ -1,6 +1,0 @@
-"0","set.seed(11) "
-"0","waic_m6.7 <- WAIC( m6.7 , pointwise=TRUE ) "
-"0","waic_m6.8 <- WAIC( m6.8 , pointwise=TRUE ) "
-"0","n <- length(waic_m6.6) "
-"2","Error: object 'waic_m6.6' not found
-"

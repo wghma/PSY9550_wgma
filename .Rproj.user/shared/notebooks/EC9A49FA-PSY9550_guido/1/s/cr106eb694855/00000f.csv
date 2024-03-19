@@ -1,8 +1,0 @@
-"0","# compute percentile interval of mean "
-"0","A_seq <- seq( from=-3 , to=3.2 , length.out=30 ) "
-"0","mu <- link( m5.1 , data=list(A=A_seq) ) "
-"0","mu.mean <- apply( mu , 2, mean ) "
-"0","mu.PI <- apply( mu , 2 , PI )"
-"0",""
-"0","# plot it all "
-"0","plot( D ~ A , data=d , col=rangi2 ) "

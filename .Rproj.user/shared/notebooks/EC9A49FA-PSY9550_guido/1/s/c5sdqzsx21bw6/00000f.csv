@@ -1,3 +1,0 @@
-"0","d$K1 <- scale( d$kcal.per.g )"
-"0","d <- d %>% "
-"0","  mutate(K2 = scale(kcal.per.g))"

@@ -1,3 +1,0 @@
-"0","# plot raw data "
-"0","# use type=""n"" to hide raw data "
-"0","plot( height ~ weight , d2 , type=""n"" )"

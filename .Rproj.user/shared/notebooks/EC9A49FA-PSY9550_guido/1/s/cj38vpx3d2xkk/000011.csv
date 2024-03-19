@@ -1,7 +1,0 @@
-"0","model <- m5.5"
-"0","# model <- m5.5_draft"
-"0",""
-"0","prior <- extract.prior( model ) "
-"0","xseq <- c(-2,2) "
-"0","mu <- link( model , post=prior , data=list(N=xseq) ) "
-"0","plot( NULL , xlim=xseq , ylim=xseq ) "
