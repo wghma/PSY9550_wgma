@@ -1,0 +1,6 @@
+"0","# call link without specifying new data"
+"0","# so it uses original data "
+"0","mu <- link( m5.3 ) "
+"2","Error in h(simpleError(msg, call)) : 
+  error in evaluating the argument 'fit' in selecting a method for function 'link': object 'm5.3' not found
+"
