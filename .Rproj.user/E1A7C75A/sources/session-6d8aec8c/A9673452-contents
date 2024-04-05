@@ -1,0 +1,228 @@
+---
+title: "Exercises for chapter x"
+author: "team name"
+date: "date"
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+# add other packages you use here
+```
+
+# Clarification and or discussion questions
+
+xxx xxx Please put things you find unclear / hard to understand / worthy of a discussion here.
+
+# Easy.
+
+## 9E1. Metropolis requirement
+
+**Which of the following is a requirement of the simple Metropolis algorithm?**
+
+\(1\) The parameters must be discrete.
+
+\(2\) The likelihood function must be Gaussian. \<- Yes?
+
+\(3\) The proposal distribution must be symmetric. \<- Yes.
+
+## 9E2. Gibbs efficiency
+
+**Gibbs sampling is more efficient than the Metropolis algorithm. How does it achieve this extra efficiency? Are there any limitations to the Gibbs sampling strategy?**
+
+Gibbs sampling is less random.
+
+Straight from the book, because I do not really understand the mechanics behind it: The improvement arises from adaptive proposals in which the distribution of proposed parameter values adjusts itself intelligently, depending upon the parameter values at the moment. How Gibbs sampling computes these adaptive proposals depends upon using particular combinations of prior distributions and likelihoods known as conjugate pairs. Conjugate pairs have analytical solutions for the posterior distribution of an individual parameter. And these solutions are what allow Gibbs sampling to make smart jumps around the joint posterior distribution of all parameters.
+
+## 9E3. Which sort of parameters can Hamiltonian Monte Carlo not handle? Can you explain why?
+
+Cannot handle discrete parameters as the estimation is smooth and needs the possibility to stop at any time.
+
+## 9E4. n_eff vs actual #samples
+
+**Explain the difference between the effective number of samples, n_eff as calculated by Stan, and the actual number of samples.**
+
+The effective number of samples is the required number of samples to achieve the same posterior distribution that was found from the actual number of samples but given an autocorrelated sampling pattern. The actual number of samples is autocorrelated, which means the samples are dependent on each other.
+
+## 9E5. Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?
+
+From the book:
+
+When Rhat is above 1.00, it usually indicates that the chain has not yet converged, and probably you shouldn’t trust the samples. Rhat can reach 1.00 even for an invalid chain. So view it perhaps as a signal of danger, but never of safety.
+
+## 9E6. Trace and trank plot
+
+Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?
+
+Building upon the example from the book.
+
+```{r}
+library(rethinking) 
+data(rugged) 
+d <- rugged %>% 
+  filter(!is.na(rgdppc_2000)) %>% 
+ mutate(log_gdp = log(rgdppc_2000),
+        log_gdp_std = log_gdp / mean(log_gdp),
+        rugged_std <- rugged / max(rugged),
+        cid <- ifelse( cont_africa==1 , 1 , 2 )
+        )
+ 
+
+dat_slim <- list( 
+  log_gdp_std = d$log_gdp_std, 
+  rugged_std = d$rugged_std, 
+  cid = as.integer( d$cid ) 
+  ) 
+
+str(dat_slim)
+```
+
+```{r}
+
+
+m9.1 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+
+
+# m9.1 <- ulam( 
+#   alist( 
+#     log_gdp_std ~ normal( mu , sigma ) , 
+#     mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) , 
+#     a[cid] ~ normal( 1 , 0.1 ) , 
+#     b[cid] ~ normal( 0 , 0.3 ) , 
+#     sigma ~ exponential( 1 ) 
+#     ), 
+#   data=dat_slim , chains=4 , cores=4 , iter=1000 
+#   )
+
+
+```
+Traceplot of estimated parameters of model 9.1 that take into account ruggedness and yes-no if the country is in Africa.
+The chains look healthy by the three qualities: (1) stationarity, (2) good mixing, and (3) convergence.
+
+The first few samples of the parameters chain show great mixing as the intervals start out huge, stretching the trace plots and dwarfing the _kommende_ samples. But after the initial mix, they seem to convergence to a stationary interval. 
+
+WINNIE
+trace plots: 
+```{r}
+par(mfrow=c(1,1))
+
+tracerplot(object= m9.1)
+```
+
+
+hmmm, colors.
+```{r}
+#trankplot
+
+trankplot( m9.1 , n_cols=2 )
+```
+
+# Medium.
+
+## 9M1. Sigma ~ unif vs ~exp
+
+**Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior and an exponential prior for the standard deviation, sigma. The uniform prior should be dunif(0,10) and the exponential should be dexp(1). Do the different priors have any detectible influence on the posterior distribution?**
+
+```{r}
+m9.1_uni <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dunif(0,10)
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+
+m9.1 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+```
+
+Posterior distribution:
+
+```{r}
+mu9.1 <- link( m9.1 ) 
+mu_mean9.1 <- apply( mu9.1 , 2 , mean ) 
+mu_PI9.1 <- apply( mu9.1 , 2 , PI ) 
+
+mu9.1_uni <- link( m9.1_uni ) 
+# summarize samples across cases 
+mu_mean9.1_uni <- apply( mu9.1_uni , 2 , mean ) 
+mu_PI9.1_uni <- apply( mu9.1_uni , 2 , PI ) 
+```
+
+## 9M2.
+
+The Cauchy and exponential priors from the terrain ruggedness model are very weak. They can be made more informative by reducing their scale. Compare the dcauchy and dexp priors for progressively smaller values of the scaling parameter. As these priors become stronger, how does each influence the posterior distribution?
+
+## 9M3.
+
+Re-estimate one of the Stan models from the chapter, but at different numbers of warmup iterations. Be sure to use the same number of sampling iterations in each case. Compare the n_eff values. How much warmup is enough?

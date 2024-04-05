@@ -1,4 +1,0 @@
-"0","library(dagitty) "
-"0","plant_dag <- dagitty( ""dag { H_0 -> H_1 F -> H_1 T -> F }"") "
-"0","coordinates( plant_dag ) <- list( x=c(H_0=0,T=2,F=1.5,H_1=1) , y=c(H_0=0,T=0,F=0,H_1=0) ) "
-"0","drawdag( plant_dag )"

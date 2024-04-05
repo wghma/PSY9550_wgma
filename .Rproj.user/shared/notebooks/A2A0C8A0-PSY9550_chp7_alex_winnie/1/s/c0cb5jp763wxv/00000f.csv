@@ -1,0 +1,3 @@
+"0","d_kl <- function(p, q) {"
+"0","  sum(p * (log(p) - log(q)))"
+"0","}"

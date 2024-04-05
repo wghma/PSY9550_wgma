@@ -1,5 +1,0 @@
-"0","sum( abs(prior$b) > 0.6 ) / length(prior$bR)"
-"1","[1]"
-"1"," Inf"
-"1","
-"

@@ -1,7 +1,0 @@
-"0","# rugged_seq from earlier."
-"0","# plotting our model posteriors..."
-"0","mu <- link( m8.1 , data=list(rugged_std=rugged_seq) ) "
-"0","mu_mean <- apply(mu,2,mean) "
-"0","mu_PI <- apply(mu,2,PI) "
-"0",""
-"0","plot( log_gdp_std ~ rugged_std , data=d_africa ) "

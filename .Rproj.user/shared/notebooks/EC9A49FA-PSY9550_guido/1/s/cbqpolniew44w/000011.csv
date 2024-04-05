@@ -1,3 +1,0 @@
-"0","data(""milk"")"
-"0","d <- milk"
-"0","pairs( ~ kcal.per.g + perc.fat + perc.lactose , data=d , col=rangi2 )"

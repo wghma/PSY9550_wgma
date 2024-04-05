@@ -1,0 +1,7 @@
+"0","D <- 10 "
+"0","T <- 1e3 "
+"0","Y <- rmvnorm(T,rep(0,D),diag(D)) "
+"0","rad_dist <- function( Y ) "
+"0","  sqrt( sum(Y^2) ) "
+"0","Rd <- sapply( 1:T , function(i) rad_dist( Y[i,] ) ) "
+"0","dens( Rd )"

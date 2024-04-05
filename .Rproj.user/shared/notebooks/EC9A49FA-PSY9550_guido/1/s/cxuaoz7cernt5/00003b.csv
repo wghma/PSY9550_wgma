@@ -1,7 +1,0 @@
-"0","set.seed(7) "
-"0","prior <- extract.prior( m8.1 ) "
-"0","# set up the plot dimensions "
-"0","plot( NULL , xlim=c(0,1) , ylim=c(0.5,1.5) , "
-"0","      xlab=""ruggedness"", "
-"0","      ylab=""log GDP"","
-"0","      main = ""a ~ dnorm(1,1), b ~ dnorm(0,1)"")"

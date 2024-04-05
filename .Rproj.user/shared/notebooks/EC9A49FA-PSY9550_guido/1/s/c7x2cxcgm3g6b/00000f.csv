@@ -1,0 +1,6 @@
+"0","D <- 10 "
+"0","T <- 1e3 "
+"0","Y <- rmvnorm(T,rep(0,D),diag(D)) "
+"2","Error in rmvnorm(T, rep(0, D), diag(D)) : 
+  could not find function ""rmvnorm""
+"

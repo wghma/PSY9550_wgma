@@ -1,0 +1,6 @@
+"0",""
+"0","library(rethinking) "
+"0",""
+"0","data(chimpanzees) "
+"0","d <- chimpanzees"
+"0","d$treatment <- 1 + d$prosoc_left + 2*d$condition"

@@ -1,0 +1,6 @@
+"0","#> # A tibble: 3 × 3"
+"0","#>   island   prop      entropy"
+"0","#>   <chr>    <list>      <dbl>"
+"0","#> 1 Island 1 <dbl [5]>   1.61 "
+"0","#> 2 Island 2 <dbl [5]>   0.743"
+"0","#> 3 Island 3 <dbl [5]>   0.984"

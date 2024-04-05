@@ -1,0 +1,8 @@
+"0","# If it’s 0.5 units from the mean to zero, then a standard deviation of 0.25 should put only 5% of the mass outside the valid internal"
+"0",""
+"0","a <- rnorm( 1e4 , 0.5 , 0.25 ) "
+"0","sum( a < 0 | a > 1 ) / length( a )"
+"1","[1]"
+"1"," 0.0447"
+"1","
+"

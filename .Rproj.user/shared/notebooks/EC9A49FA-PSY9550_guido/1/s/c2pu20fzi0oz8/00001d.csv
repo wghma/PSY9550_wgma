@@ -1,6 +1,0 @@
-"0","# draw 50 lines from the prior "
-"0",""
-"0","rugged_seq <- seq( from=-0.1 , to=1.1 , length.out=30 ) "
-"0","mu <- link( m8.1 , post=prior , data=data.frame(rugged_std=rugged_seq) ) "
-"0",""
-"0","for ( i in 1:50 ) lines( rugged_seq , mu[i,] , col=col.alpha(""black"",0.3) )"
