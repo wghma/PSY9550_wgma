@@ -94,7 +94,9 @@ Cannot handle discrete parameters as the estimation is smooth and needs the poss
 
 The effective number of samples is the required number of samples to achieve the same posterior distribution that was found from the actual number of samples but given an autocorrelated sampling pattern. The actual number of samples is autocorrelated, which means the samples are dependent on each other.
 
-## 9E5. Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?
+## 9E5. Rhat, approach what? 
+**Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?**
+Not sure, but all of the Rhat for the estimated parameters are set as 1 in the precis(model.x)-table.
 
 From the book:
 
@@ -183,7 +185,7 @@ trankplot( m9.1 , n_cols=2 )
 **Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior and an exponential prior for the standard deviation, sigma. The uniform prior should be dunif(0,10) and the exponential should be dexp(1). Do the different priors have any detectible influence on the posterior distribution?**
 
 ```{r}
-m9.1_uni <- ulam(
+m9.1_uni <- map2stan(
   alist(
     log_gdp_std ~ dnorm( mu , sigma ) ,
     mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
@@ -194,16 +196,19 @@ m9.1_uni <- ulam(
   data=dat_slim , chains=4 , cores=4 , iter=1000
   )
 
-m9.1 <- ulam(
-  alist(
-    log_gdp_std ~ dnorm( mu , sigma ) ,
-    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
-    a[cid] ~ dnorm( 1 , 0.1 ) ,
-    b[cid] ~ dnorm( 0 , 0.3 ) ,
-    sigma ~ dexp( 1 )
-    ),
-  data=dat_slim , chains=4 , cores=4 , iter=1000
-  )
+# m9.1 <- map2stan(
+#   alist(
+#     log_gdp_std ~ dnorm( mu , sigma ) ,
+#     mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+#     a[cid] ~ dnorm( 1 , 0.1 ) ,
+#     b[cid] ~ dnorm( 0 , 0.3 ) ,
+#     sigma ~ dexp( 1 )
+#     ),
+#   data=dat_slim , chains=4 , cores=4 , iter=1000
+#   )
+
+post9.1 <- extract.samples(m9.1)
+post9.1_uni <- extract.samples(m9.1)
 ```
 
 Posterior distribution:
