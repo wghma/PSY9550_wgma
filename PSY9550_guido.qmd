@@ -3200,32 +3200,49 @@ U-turn problem: However, that low autocorrelation is not automatic. The righthan
 
 ## 9.5 Care and feeding Marcov chain
 
-### 9.5.1. How many samples do you need? 
+### 9.5.1. How many samples do you need?
 
 You can control the number of samples from the chain by using the iter and warmup parameters. The defaults are 1000 for iter and warmup is set to iter/2, which gives you 500 warmup samples and 500 real samples to use for inference. you can decide on other values for iter and warmup.
 
-1) First, what really matters is the effective number of samples, not the raw number. The effective number of samples is an estimate of the number of independent samples from the posterior distribution. Markov chains are typically autocorrelated, so that sequential samples are not entirely independent. Stan chains tend to be less autocorrelated than those produced by other engines, but there is always some autocorrelation. As you saw earlier in the chapter, Stan provides an estimate of effective number of samples as n_eff.
+1)  First, what really matters is the effective number of samples, not the raw number. The effective number of samples is an estimate of the number of independent samples from the posterior distribution. Markov chains are typically autocorrelated, so that sequential samples are not entirely independent. Stan chains tend to be less autocorrelated than those produced by other engines, but there is always some autocorrelation. As you saw earlier in the chapter, Stan provides an estimate of effective number of samples as n_eff.
 
-2) If all you want are posterior means, it doesn’t take many samples at all to get very good estimates. Even a couple hundred samples will do. But if you care about the exact shape in the extreme tails of the posterior, the 99th percentile or so, then you’ll need many many more. So there is no universally useful number of samples to aim for. In most typical regression applications, you can get a very good estimate of the posterior mean with as few as 200 effective samples. And if the posterior is approximately Gaussian, then all you need in addition is a good estimate of the variance, which can be had with one order of magnitude more, in most cases. For highly skewed posteriors, you’ll have to think more about which region of the distribution interests you.
+2)  If all you want are posterior means, it doesn’t take many samples at all to get very good estimates. Even a couple hundred samples will do. But if you care about the exact shape in the extreme tails of the posterior, the 99th percentile or so, then you’ll need many many more. So there is no universally useful number of samples to aim for. In most typical regression applications, you can get a very good estimate of the posterior mean with as few as 200 effective samples. And if the posterior is approximately Gaussian, then all you need in addition is a good estimate of the variance, which can be had with one order of magnitude more, in most cases. For highly skewed posteriors, you’ll have to think more about which region of the distribution interests you.
 
-3) How much warm up? The warmup setting is more subtle. On the one hand, you want to have the shortest warmup period necessary, so you can get on with real sampling. But on the other hand, more warmup can mean more efficient sampling. With Stan models, typically you can devote as much as half of your total samples, the iter value, to warmup and come out very well. But for simple models like those you’ve fit so far, much less warmup is really needed. Models can vary a lot in the shape of their posterior distributions, so again there is no universally best answer. But if you are having trouble, you might try increasing the warmup. If not, you might try reducing it.
+3)  How much warm up? The warmup setting is more subtle. On the one hand, you want to have the shortest warmup period necessary, so you can get on with real sampling. But on the other hand, more warmup can mean more efficient sampling. With Stan models, typically you can devote as much as half of your total samples, the iter value, to warmup and come out very well. But for simple models like those you’ve fit so far, much less warmup is really needed. Models can vary a lot in the shape of their posterior distributions, so again there is no universally best answer. But if you are having trouble, you might try increasing the warmup. If not, you might try reducing it.
 
 ### 9.5.2. How many chains do you need?
-
 
 First, when debugging a model, use a single chain. Then when deciding whether the chains are valid, you need more than one chain. Third, when you begin the final run that you’ll make inferences from, you only really need one chain.
 
 The first time you try to sample from a chain, you might not be sure whether the chain is working right. So of course you will check the trace plot. Having more than one chain during these checks helps to make sure that the Markov chains are all converging to the same distribution. Using 3 or 4 chains is conventional, and quite often more than enough to reassure us that the sampling is working properly.
 
-One long chain, or several shorter chains? 
-But once you’ve verified that the sampling is working well, and you have a good idea of how many warmup samples you need, it’s perfectly safe to just run one long chain. For example, suppose we learn that we need 1000 warmup samples and about 9000 real samples in total. Should we run one chain, with warmup=1000 and iter=10000, or rather 3 chains, with warmup=1000 and iter=4000? It doesn’t really matter, in terms of inference. But it might matter in efficiency, because the 3 chains cost you an extra 2000 samples of warmup that just get thrown away. And since warmup is typically the slowest part of the chain, these extra 2000 samples cost a disproportionate amount of your computer’s time. On the other hand, if you run the chains on different computers or processor cores within a single computer, then you might prefer 3 chains, because you can spread the load and finish the whole job faster.
+One long chain, or several shorter chains? But once you’ve verified that the sampling is working well, and you have a good idea of how many warmup samples you need, it’s perfectly safe to just run one long chain. For example, suppose we learn that we need 1000 warmup samples and about 9000 real samples in total. Should we run one chain, with warmup=1000 and iter=10000, or rather 3 chains, with warmup=1000 and iter=4000? It doesn’t really matter, in terms of inference. But it might matter in efficiency, because the 3 chains cost you an extra 2000 samples of warmup that just get thrown away. And since warmup is typically the slowest part of the chain, these extra 2000 samples cost a disproportionate amount of your computer’s time. On the other hand, if you run the chains on different computers or processor cores within a single computer, then you might prefer 3 chains, because you can spread the load and finish the whole job faster.
 
 **There are exotic situations in which all of the advice above must be modified. But for typical regression models, you can live by the motto four short chains to check, one long chain for inference.**
 
 Rhat: When Rhat is above 1.00, it usually indicates that the chain has not yet converged, and probably you shouldn’t trust the samples. Rhat can reach 1.00 even for an invalid chain. So view it perhaps as a signal of danger, but never of safety.
 
+### 9.5.3. Taming a wild chain.
 
+...or healing an unhealthy chain.
 
+We want the chains to be: 1) Stationary, 2) have good mixing (by lots of overlapping of the colors of the tracerplot and trankplot), 3) converging.
+
+```{r}
+tracerplot(model) #not traceplot
+```
+
+![](images/clipboard-3728185629.png)
+
+# 10 Big entropy and the GLM
+
+## 10.2 GLMs
+
+Explains the different distributions with use of entropy, doesnt feel too useful.
+
+### 10.2.3. Omitted variable bias again. 
+
+Back in Chapters 5 and 6, you saw some examples of omitted variable bias, where leaving a causally important variable out of a model leads to biased inference. The same thing can of course happen in GLMs. But it can be worse in GLMs, because even a variable that isn’t technically a confounder can bias inference, once we have a link function. The reason is that the ceiling and floor effects described above can distort estimates by suppressing the casual influence of a variable. Suppose for example that two variables X and Z independently influence a binary outcome Y. If either X and Z is large enough, then Y = 1. Both variables are sufficient causes of Y. Now if we don’t measure Z but only X, we might consistently underestimate the causal effect of X. Why? Because Z is sufficient for Y to equal 1, and we didn’t measure Z. So there are cases in the data where X is small but Y = 1. These cases imply X does not influence Y very strongly, but only because we are ignoring Z. This phenomenon doesn’t occur in ordinary linear regression, because independent causes just contribute to the mean. There are no ceiling or floor effects (in theory). There is no avoiding this problem. Falling back on a linear, rather than generalized linear, model won’t change the reality of omitted variable bias. It will just statistically disguise it. That may be a good publication strategy, but it’s not a good inferential strategy.
 
 # 11 God Spiked the Integers
 
@@ -3253,6 +3270,7 @@ d$treatment <- 1 + d$prosoc_left + 2*d$condition
 
 xtabs( ~ treatment + prosoc_left + condition , d )
 ```
+
 L = count data for how many pulled left
 
 ![](images/clipboard-3332960037.png)

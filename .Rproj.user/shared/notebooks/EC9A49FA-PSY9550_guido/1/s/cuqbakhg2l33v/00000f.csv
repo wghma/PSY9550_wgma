@@ -1,4 +1,0 @@
-"0","prior <- extract.prior(m8.6)"
-"0","mu <- link( m8.6 , "
-"0","            post = prior,"
-"0","            data=data.frame( shade_cent=s , water_cent=-1:1 ) ) "

@@ -1,0 +1,27 @@
+{
+    "id": "0564F62B",
+    "path": "~/00_PhD_lokal/RVU_corona/RVU_korona_github/RVUkorona_readcsv.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "416227353",
+    "contents": "",
+    "dirty": false,
+    "created": 1712565659933.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "75,50",
+        "scrollLine": "64"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1712566919,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1712566919668,
+    "read_only": false,
+    "read_only_alternatives": []
+}

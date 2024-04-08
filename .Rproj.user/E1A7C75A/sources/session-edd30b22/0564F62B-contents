@@ -1,0 +1,95 @@
+
+# Packages ------------
+
+library(tidyverse)
+library(readxl)
+library(naniar)
+library(xlsx)
+library(lubridate)
+library(scales)
+library(clipr)
+
+setwd("~/00_PhD_lokal/RVU_corona/RVU_korona_github") ### !!! change
+Sys.setlocale(locale = "English")
+
+
+
+# Read CSV ---------------------------------------------------
+
+
+
+# Om man ikke vil kjøre alt, men bare hente fra CSV
+personfil <- read.csv2("personfil_korona.csv")
+reisefil <- read.csv2("reisefil_korona.csv") %>% 
+  filter(!is.na(reisemiddel))
+
+
+
+# Relevelling -------------------
+
+
+# relevelling after unpacking csv. Search "_levels" for all level-worthy variables
+
+month_vec <- month.abb[1:38%%13]
+month_levels <- paste0(month_vec, "'", c(rep(19,12),rep(20,12),rep(21,12) ))
+mode_levels <- c("Car, driver", "Car, passenger", "Public transportation", "Pedal bike", "Electrical bike", "By foot", "MC, other" )
+tidskategori_levels <- c("< 5 min", "5 - 10 min", "10 - 15 min","< 15 min", "15 - 30 min", 
+                         "30 - 50 min","30 - 60 min","1 - 2 hours", "> 2 hours", "50 - 90 min",
+                         "1.5 - 3 hours","> 3 hours")
+
+tellekategori_levels <- c("No trips",
+                          "1-2 trips",
+                          "3-4 trips",
+                          "5-6 trips", 
+                          "7+ trips")
+formål_levels_roundtrip = c(
+  "To/from workplace",
+  "School/university",
+  "Business trip / temporary accomodation",
+  "Shopping/grocery/service", 
+  "Pick up/drop off trip",
+  "Free time activities",
+  "Undirected round trips",
+  "Other"
+)
+
+formål_levels_rvu = c(
+  "To/from workplace",
+  "School/university",
+  "Business trip / temporary accomodation",
+  "Shopping/grocery/service", 
+  "Pick up/drop off trip",
+  "Free time activities",
+  "Other"
+)
+
+
+
+
+# day_levels = as.character(wday(1:7, label = T))[c(2:7,1)]
+
+personfil <- personfil %>% 
+  as_tibble() %>% 
+  mutate( 
+    #tidskategori = fct_relevel(tidskategori, tidskategori_levels),
+    monthyear = fct_relevel(monthyear, levels = month_levels),
+    tellekategori = fct_relevel(tellekategori, levels = tellekategori_levels),
+    day = fct_relevel(day, day_levels)
+  )
+
+
+reisefil <- reisefil %>% 
+  as_tibble() %>% 
+  mutate(tidskategori = fct_relevel(tidskategori, tidskategori_levels),
+         monthyear = fct_relevel(monthyear, levels = month_levels),
+         tellekategori = fct_relevel(tellekategori, levels = tellekategori_levels),
+         reisemiddel = fct_relevel(reisemiddel, levels = mode_levels),
+         formål = fct_relevel(formål, levels = formål_levels_roundtrip),
+         day = fct_relevel(day, day_levels)
+  )
+
+reisefil %>% 
+  names() %>% 
+  write_clip()
+
+
