@@ -1,0 +1,1 @@
+"0","for ( j in 1:7 ) text( (j-1)*4+2.5 , 1.1 , concat(""actor "",j) , xpd=TRUE ) "

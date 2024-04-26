@@ -1,0 +1,6 @@
+"0","# par(mfrow=c(1,1))"
+"0","par(mfrow = c(1,2))"
+"0",""
+"0","rugged_seq <- seq( from=-0.1 , to=1.1 , length.out=170 ) #0 to 1"
+"0",""
+"0","plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot"

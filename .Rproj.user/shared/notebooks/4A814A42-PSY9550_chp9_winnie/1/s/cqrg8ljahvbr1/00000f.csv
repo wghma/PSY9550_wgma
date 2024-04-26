@@ -1,0 +1,4 @@
+"0","post_b %>% "
+"0","  ggplot(aes(x = b,  color = model)) +"
+"0","  geom_density(size = 1)+"
+"0","  facet_wrap(vars(continent))"

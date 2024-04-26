@@ -1,0 +1,475 @@
+---
+title: "Exercises for chapter 9"
+author: "Winnie"
+date: 04-15-2024
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+# add other packages you use here
+```
+
+# Clarification and or discussion questions
+
+What did 9M2 want us to reflect on (when changing beta from normal distribution to exponential)?
+
+Guido: this hard constraint is a problem, as our data do include datapoints for non-african countries where the beta is negative(?). It would better to have a softer constraint: normal distribution further up the positive side with thin tails to the negative side.
+
+# Easy.
+
+## 9E1. Metropolis requirement
+
+**Which of the following is a requirement of the simple Metropolis algorithm?**
+
+\(1\) The parameters must be discrete.
+
+\(2\) The likelihood function must be Gaussian. \<- Yes?
+
+\(3\) The proposal distribution must be symmetric. \<- Yes.
+
+## 9E2. Gibbs efficiency
+
+**Gibbs sampling is more efficient than the Metropolis algorithm. How does it achieve this extra efficiency? Are there any limitations to the Gibbs sampling strategy?**
+
+Gibbs sampling is less random.
+
+Straight from the book, because I do not really understand the mechanics behind it: The improvement arises from adaptive proposals in which the distribution of proposed parameter values adjusts itself intelligently, depending upon the parameter values at the moment. How Gibbs sampling computes these adaptive proposals depends upon using particular combinations of prior distributions and likelihoods known as conjugate pairs. Conjugate pairs have analytical solutions for the posterior distribution of an individual parameter. And these solutions are what allow Gibbs sampling to make smart jumps around the joint posterior distribution of all parameters.
+
+## 9E3. Which sort of parameters can Hamiltonian Monte Carlo not handle? Can you explain why?
+
+Cannot handle discrete parameters as the estimation is smooth and needs the possibility to stop at any time.
+
+## 9E4. n_eff vs actual #samples
+
+**Explain the difference between the effective number of samples, n_eff as calculated by Stan, and the actual number of samples.**
+
+The effective number of samples is the required number of samples to achieve the same posterior distribution that was found from the actual number of samples but given an autocorrelated sampling pattern. The actual number of samples is autocorrelated, which means the samples are dependent on each other.
+
+## 9E5. Rhat, approach what? 
+**Which value should Rhat approach, when a chain is sampling the posterior distribution correctly?**
+Not sure, but all of the Rhat for the estimated parameters are set as 1 in the precis(model.x)-table.
+
+From the book:
+
+When Rhat is above 1.00, it usually indicates that the chain has not yet converged, and probably you shouldn’t trust the samples. Rhat can reach 1.00 even for an invalid chain. So view it perhaps as a signal of danger, but never of safety.
+
+## 9E6. Trace and trank plot
+
+**Sketch a good trace plot for a Markov chain, one that is effectively sampling from the posterior distribution. What is good about its shape? Then sketch a trace plot for a malfunctioning Markov chain. What about its shape indicates malfunction?**
+
+Building upon the example from the book.
+
+```{r}
+library(rethinking) 
+data(rugged) 
+d <- rugged %>% 
+  filter(!is.na(rgdppc_2000)) %>% 
+ mutate(log_gdp = log(rgdppc_2000),
+        log_gdp_std = log_gdp / mean(log_gdp),
+        rugged_std = rugged / max(rugged),
+        cid = ifelse( cont_africa==1 , 1 , 2 )
+        )
+ 
+
+dat_slim <- list( 
+  log_gdp_std = d$log_gdp_std, 
+  rugged_std = d$rugged_std, 
+  cid = as.integer( d$cid ) 
+  ) 
+
+str(dat_slim)
+```
+
+```{r}
+
+
+m9.1 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+
+#Keep getting warnings when using traceplot() or trankplot() on ulam-object.
+# m9.1 <- ulam( 
+#   alist( 
+#     log_gdp_std ~ normal( mu , sigma ) , 
+#     mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) , 
+#     a[cid] ~ normal( 1 , 0.1 ) , 
+#     b[cid] ~ normal( 0 , 0.3 ) , 
+#     sigma ~ exponential( 1 ) 
+#     ), 
+#   data=dat_slim , chains=4 , cores=4 , iter=1000 
+#   )
+
+
+```
+Below traceplot and trankplot has been plotted for the estimation process of model 9.1 (a model that take into account ruggedness and yes-no if the country is in Africa.)
+The chains look healthy by the three qualities: (1) stationarity, (2) good mixing, and (3) convergence.
+
+The first few samples of the parameters chain show great mixing as the intervals start out wide, stretching the trace plots and dwarfing the successive samples. But after the wide search, the chain seem to convergence to a stationary interval. The trankplot show good mixing between the chains (= not long stretches at the same y-value).
+
+Traceplot: 
+```{r}
+par(mfrow=c(1,1))
+
+tracerplot(object= m9.1) # I could not make traceplot() work.
+```
+
+
+Trankplot:
+```{r}
+#trankplot
+
+trankplot( m9.1 , n_cols=2 )
+```
+
+# Medium.
+
+## 9M1. Sigma ~ unif vs ~exp
+
+**Re-estimate the terrain ruggedness model from the chapter, but now using a uniform prior and an exponential prior for the standard deviation, sigma. The uniform prior should be dunif(0,10) and the exponential should be dexp(1). Do the different priors have any detectible influence on the posterior distribution?**
+
+An exercise to show a soft constraint. But this time we had so much data that the influence of priors did not really matter. M2 show that the case of hard constraints.
+
+
+```{r}
+m9.1_uni <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dunif(0,10)
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+
+# Have already estimated m9.1 in exercise 9E6.
+# m9.1 <- map2stan(
+#   alist(
+#     log_gdp_std ~ dnorm( mu , sigma ) ,
+#     mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+#     a[cid] ~ dnorm( 1 , 0.1 ) ,
+#     b[cid] ~ dnorm( 0 , 0.3 ) ,
+#     sigma ~ dexp( 1 )
+#     ),
+#   data=dat_slim , chains=4 , cores=4 , iter=1000
+#   )
+
+
+# oh, forgot to use post-estimates for anything...
+# post9.1 <- extract.samples(m9.1)
+# post9.1_uni <- extract.samples(m9.1)
+```
+Check m9.1. Yes, n_eff > iterations, and Rhat is 1.
+```{r}
+precis(m9.1, depth = 2)
+```
+Check m9.1_uni. Yes, it seem all good as well. n_eff > iterations, and Rhat is 1.
+```{r}
+precis(m9.1_uni, depth = 2)
+```
+
+
+Posterior distribution:
+
+```{r}
+mu9.1 <- link( m9.1 ) 
+mu_mean9.1 <- apply( mu9.1 , 2 , mean ) 
+mu_PI9.1 <- apply( mu9.1 , 2 , PI ) 
+
+mu9.1_uni <- link( m9.1_uni ) 
+# summarize samples across cases 
+mu_mean9.1_uni <- apply( mu9.1_uni , 2 , mean ) 
+mu_PI9.1_uni <- apply( mu9.1_uni , 2 , PI ) 
+```
+
+
+Plotting the posteriors for the sigma-uni model and the sigma-exp model. They are almost identical. First they were plotted in the same plot area (diagram) and they were overlapping so well that the other color was completely hidden.
+
+Does this mean that having the prior distribution for sigma ~ dexp(1) is actually just as uninformative as having a uniform distribution.
+
+```{r}
+# par(mfrow=c(1,1))
+par(mfrow = c(1,2))
+
+rugged_seq <- seq( from=-0.1 , to=1.1 , length.out=170 ) #0 to 1
+
+plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot
+lines( rugged_seq , mu_mean9.1 , lwd=2 , col =  alpha("lightblue", 1)) 
+shade( mu_PI9.1 , rugged_seq , col =  alpha("lightblue", 0.4))
+title(main = "model 9.1. \n blue=uniform prior for sigma")
+
+plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot
+lines( rugged_seq , mu_mean9.1_uni , lwd=2 , col =  alpha("purple", 1)) 
+shade( mu_PI9.1_uni , rugged_seq , col =  alpha("purple", 0.4))
+title(main = "purple = exponential prior for sigma")
+
+
+# scatter plot by  color for dummy variable 0/1 går ikke, men id 1/2 går.
+# plot( log_gdp_std ~ rugged_std , data=d, col = cid) 
+
+
+
+```
+
+
+
+
+## 9M2. Modify to b[cid]~dexp(0.3)
+
+**Modify the terrain ruggedness model again. This time, change the prior for b[cid] to dexp(0.3). What does this do to the posterior distribution? Can you explain it?**
+
+```{r}
+
+m9.2 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dexp( 0.3 ) ,  # old: b[cid] ~ dnorm( 0 , 0.3 )
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=1000
+  )
+
+```
+```{r}
+mu9.2 <- link( m9.2 ) 
+mu_mean9.2 <- apply( mu9.2 , 2 , mean ) 
+mu_PI9.2 <- apply( mu9.2 , 2 , PI ) 
+```
+Well, it was not too easy to visually interpret any difference between the models by looking at the posterior distribution of log_gdp.
+
+```{r, warning=F, message=F}
+
+
+par(mfrow = c(1,2))
+
+rugged_seq <- seq( from=-0.1 , to=1.1 , length.out=170 ) #0 to 1
+
+plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot
+lines( rugged_seq , mu_mean9.1 , lwd=2 , col =  alpha("lightblue", 1)) 
+shade( mu_PI9.1 , rugged_seq , col =  alpha("lightblue", 0.4))
+title(main = "model 9.1. \n b[cid] ~ N(0, 0.3)")
+
+plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot
+lines( rugged_seq , mu_mean9.2 , lwd=2 , col =  alpha("purple", 1)) 
+shade( mu_PI9.2 , rugged_seq , col =  alpha("purple", 0.4))
+title(main = "purple: b[cid] ~ dexp( 0.3 )")
+
+
+# scatter plot by  color for dummy variable 0/1 går ikke, men id 1/2 går.
+# plot( log_gdp_std ~ rugged_std , data=d, col = cid) 
+
+
+```
+Looking at the WAIC m9.1 is a better model than m9.2??
+
+```{r}
+compare(m9.1, m9.2)
+```
+
+Sample the estimated betas for each model.
+```{r}
+
+# africa: cid =1, non-africa: cid =2
+
+post9.1_b <- extract.samples(m9.1)$b %>% 
+  as.tibble() %>% 
+  setNames(c("africa", "non_africa")) %>%
+  mutate(model = "m9.1") %>% 
+  pivot_longer(!model, values_to = "b", names_to = "continent")
+
+post9.2_b <- extract.samples(m9.2)$b %>% 
+  as.tibble() %>% 
+  setNames(c("africa", "non_africa")) %>%
+  mutate(model = "m9.2")%>% 
+  pivot_longer(!model, values_to = "b", names_to = "continent")
+
+post_b <- post9.1_b %>% 
+  bind_rows(post9.2_b)
+
+```
+
+
+The beta is the difference between the models m9.1 (b~dnorm) and m9.2 (b~dexp). The betas have in common that they are estimated for each group: african country vs non-african country.
+Well, for the african countries they have almost identical betas in both models, but for non-african countries they look completely different. Not sure if I like the exponential distribution here.
+
+Guido: this hard constraint is a problem, as our data do include datapoints for non-african countries where the beta is negative(?). It would better to have a softer constraint: normal distribution further up the positive side with thin tails to the negative side.
+
+```{r}
+post_b %>% 
+  ggplot(aes(x = b,  color = model)) +
+  geom_density(size = 1)+
+  facet_wrap(vars(continent))
+```
+And, should not the the Rhat be 1? Well, they are close to 1. And the n_eff is below the number of iterations = 1000. The estimation of the model m9.2 did produce a warning message about divergence.
+
+```{r}
+precis(m9.2, depth = 2)
+```
+
+Traceplot. Try to look at the chains. The estimation of beta_africa looks wild, like it is not converging.
+```{r}
+par(mfrow=c(1,1))
+
+tracerplot(object= m9.2) # I could not make traceplot() work.
+```
+
+Based on this trankplot (m9.2) and how well mixed the previous m9.1 was, a[1] and b[2] seem to be less mixed. Though, it is hard to tell, as the mixing was not the worst.
+```{r}
+trankplot(m9.2, n_cols = 2)
+```
+
+
+
+## 9M3. Change warmup iterations
+
+**Re-estimate one of the Stan models from the chapter, but at different numbers of warmup iterations. Be sure to use the same number of sampling iterations in each case. Compare the n_eff values. How much warmup is enough?**
+
+
+```{r}
+
+# set iterations to 50 to reduce running time, just for the sake of this exercise
+
+
+m9.1_wp_250 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=500, warmup = 250
+  )
+
+
+m9.1_wp_150 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=500, warmup = 150
+  )
+
+m9.1_wp_50 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=500, warmup = 50
+  )
+
+m9.1_wp_10 <- map2stan(
+  alist(
+    log_gdp_std ~ dnorm( mu , sigma ) ,
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,
+    a[cid] ~ dnorm( 1 , 0.1 ) ,
+    b[cid] ~ dnorm( 0 , 0.3 ) ,
+    sigma ~ dexp( 1 )
+    ),
+  data=dat_slim , chains=4 , cores=4 , iter=500, warmup = 10
+  )
+
+```
+For the models having 50% warmup, 30% and 10% the Rhat is 1 and n_eff is larger than the number of iterations (500). It is a problem estimating for the fourth model having only 2% warmup.
+```{r}
+precis(m9.1_wp_250, depth = 2)
+```
+
+```{r}
+precis(m9.1_wp_150, depth = 2)
+```
+
+```{r}
+precis(m9.1_wp_50, depth = 2)
+```
+Finally, a clear problem. This model that have 10 samples for warmup out of 500 samples, have n_eff smaller than 500 and Rhat above 1.
+
+```{r}
+precis(m9.1_wp_10, depth = 2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

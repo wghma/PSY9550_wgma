@@ -22,11 +22,12 @@ https://github.com/gbiele/StatRethink
 
 ebook from others: https://bookdown.org/content/4857/ solutions: https://sr2-solutions.wjakethompson.com/overfitting-mcmc#chapter-9
 
-```{r, warning=F}
+```{r, warning=F, echo=F}
 library(rethinking)
 library(magrittr)
 library(tidyverse)
 library(dagitty)
+library(rstan)
 
 Sys.setlocale("LC_ALL", 'en_US.UTF-8')
 ```
@@ -2462,6 +2463,14 @@ compare(m5.1, m5.2, m5.3, func = PSIS)
 
 The evidence from surviving manatees and bombers is misleading, because it is conditional on survival. Manatees and bombers that perished look different. A manatee struck by a keel is less likely to live than another grazed by a propeller. So among the survivors, propeller scars are common. Similarly, bombers that returned home conspicuously lacked damage to the cockpit and engines. They got lucky.
 
+## 8 guido
+
+IQ \~ 0 + SES.c + A Setting in 0 = this means that we say we dont want a common intercept for the different SES groups (0/1). We want an intercept each for SES_0 and SES_1.
+
+IQ \~ 0 + SES.c + A:SES.c != IQ\~SES + A + SES:A. Because the first one estimates group-unique intercepts and slopes, and this makes it easier to set priors for the actual slopes Betas. While the other model: IQ\~SES + A + SES:A, would make the SES_0 the base-model and SES_1 the added model on the base-model, and this makes it more difficult to estimate the prior which would represent the the distribution of the difference in slopes.
+
+Facet figures/diagrams when having two predicting continuous variables. Could show them as 4 panels divided by 0.25, 0.5, 0.75 quantiles.
+
 ## 8.1 Building an interaction
 
 (Africa is also geographically special, in a puzzling way: Bad geography tends to be related to bad economies outside of Africa, but African economies may actually benefit from bad geography.)
@@ -2702,8 +2711,8 @@ mu.Africa_mu <- apply( mu.Africa , 2 , mean )
 mu.Africa_ci <- apply( mu.Africa , 2 , PI , prob=0.97 )
 
 plot( log_gdp_std ~ rugged_std , data=d_non_africa ) 
-lines( rugged_seq , mu.NotAfrica_mu , lwd=2 ) 
-shade( mu.NotAfrica_ci , rugged_seq )
+lines( rugged.seq , mu.NotAfrica_mu , lwd=2 ) 
+shade( mu.NotAfrica_ci , rugged.seq )
 ```
 
 ...and now we plot. We started this subchapter knowing that the plots of the splitted dataset show that teach category have different slopes. Africa having positive slope and non-africa having negative. We want to show this in our model using the whole dataset.
@@ -2711,11 +2720,11 @@ shade( mu.NotAfrica_ci , rugged_seq )
 ```{r}
 # scatter plot by  color for dummy variable 0/1 går ikke, men id 1/2 går.
 plot( log_gdp_std ~ rugged_std , data=d, col = cid) 
-lines( rugged_seq , mu.NotAfrica_mu , lwd=2 ) 
-shade( mu.NotAfrica_ci , rugged_seq )
+lines( rugged.seq , mu.NotAfrica_mu , lwd=2 ) 
+shade( mu.NotAfrica_ci , rugged.seq )
 
-lines( rugged_seq , mu.Africa_mu , lwd=2 , col = "blue") 
-shade( mu.Africa_ci , rugged_seq, col =  alpha("lightblue", 0.4))
+lines( rugged.seq , mu.Africa_mu , lwd=2 , col = "blue") 
+shade( mu.Africa_ci , rugged.seq, col =  alpha("lightblue", 0.4))
 title(main = "model 8.4, different alpha, same beta")
 ```
 
@@ -2743,11 +2752,11 @@ mu.Africa_mu <- apply( mu.Africa , 2 , mean )
 mu.Africa_ci <- apply( mu.Africa , 2 , PI , prob=0.97 )
 
 plot( log_gdp_std ~ rugged_std , data=d , col = cid) 
-lines( rugged_seq , mu.NotAfrica_mu , lwd=2 ) 
-shade( mu.NotAfrica_ci , rugged_seq )
+lines( rugged.seq , mu.NotAfrica_mu , lwd=2 ) 
+shade( mu.NotAfrica_ci , rugged.seq )
 
-lines( rugged_seq , mu.Africa_mu , lwd=2 , col = "blue") 
-shade( mu.Africa_ci , rugged_seq, col =  alpha("lightblue", 0.4))
+lines( rugged.seq , mu.Africa_mu , lwd=2 , col = "blue") 
+shade( mu.Africa_ci , rugged.seq, col =  alpha("lightblue", 0.4))
 title(main = "model 8.4, different alpha, same beta")
 ```
 
@@ -3057,6 +3066,28 @@ for ( i in 1:20 ) lines( -1:1 , mu[i,] , col=col.alpha("black",0.3) )
 }
 ```
 
+# 9 MCMC Guido
+
+Something about making proposals.
+
+How to find the relative probability of the combinations of the estimated parameters. We know the chance of a parameter being a certain value, but what is the total chance for the unique combinations of parameters. Guido says we might want to know the log-posterior of a posterior sample/proposal even if it would be LOW (since yes, we usually want high log-posterior), so that it is possible to explore the regions of low likelihood, though it wont gent chosen if it is far away from the log posterior of the previous sample(??)
+
+MCMC is a way of approximating without running this infinite remove-one-point-and-estimate-new-model process.
+
+Gibbs only estimate one parameter at a time, while Metropolitan Hastings estimate all simultaneously.
+
+That MCMC is much faster for approx than metropolis/gibbs (shown by simulated )
+
+Stationary = flat trend Convergence = that the chains are still not going upwards/downwards Good mixing = stable up/down lines the whole way
+
+Rhat = R hat = r\^ = is the variation between the chains. We want the variations between the chain to be the same as the variation INSIDE each chain. This is a sign of convergence to the SAME POINT. Because the chains could converge to each of their own different points = looking like parallell snakes. easy models can be below 1, like 0.999, this can be quite random due to MCMC, but that is okey, nothing wrong. Nowadays we would want R-hat to be below 1.01.
+
+The more n_eff (samples), the better the estimated models. If we want to look into if the mean is 0.7 or 0.8 (for example) then n_eff = 500 is totally fine. If want to deem a model good, look at R-hat, and not if n_eff \> autocorrelated samples.
+
+\[showing the 4 models with: good mixing, no mixing, AR/not stationary, not converging\]. Mixing is the ideal one. Not mixing is worse, but ok. But the others are really bad. we then see that sationary and convergence is IMPORTANT. n_eff and ESS is the same thing. ess_bulk to estimate the mean value. ess_tail = number of samples to estimate the values at the utmost quantiles.
+
+standard run: 4 chains, 1000 warmups, 1000 post-warm up, check R-hat \< 1.01, and if ESS or n_eff \> 500.
+
 # 9 Markov chain Monte Carlo (MCMC)
 
 1\) grid approximation. 2) quadratic approx. 3) MCMC
@@ -3234,7 +3265,7 @@ tracerplot(model) #not traceplot
 
 ![](images/clipboard-3728185629.png)
 
-# 10 Big entropy and the GLM
+# 10 Big entropy and the GLM (Skip)
 
 ## 10.2 GLMs
 
@@ -3246,11 +3277,77 @@ Back in Chapters 5 and 6, you saw some examples of omitted variable bias, where 
 
 # 11 God Spiked the Integers
 
+## 11 Guido 25.04.24
+
+
+Linear in model  != Linear in parameters
+Linear model only: y = beta*x
+Linear in parameters: y = b*x + beta.x^2
+A model that is not linear in model or in parameters: y = x^beta
+
+
+Some data types stop at zero for example, strictly positive. Then we might use something else than gaussian/normal distribution (which would have tails into the negative space)
+
+CEntral limit theorem: take the mean from any distribution, and then the disitrubiton of the MEANS would be gaussian.
+
+Binomial: success probability, and is limited by the number of trials. Always a fraction, and therefor always needs to inputs: N = trials, p = success probability.
+POisson: count data OR rate of something happening, and each count is independent. POission is unlimited of anything, it just happens.
+
+Binomial...
+Use link function to get our y within a range we want, y = a + bx. So, this is the solution: y = inv_logit(a + bx). Different link functions are implemented as to get different constraints. 
+
+
+Probit and logit is the same except for different link functions. Logit uses logistic, while the probit uses gaussian, but both are used to get the binomial distribution for y (which means it spews out a y between 0 and 1). Can change between them using family =.
+
+inv_logit(x) = exp(x)/(1 + exp(x))
+
+
+
+Poisson....
+
+Lambda = exp(a + bx), then you get a lambda that is strictly positive. **The exponential force the number to be above zero.**
+
+```{r}
+x = seq(1,10,0.01)
+
+plot(x, y = exp(x))
+plot(x = x*-1, y = )
+```
+
+
+Having flat (normal) priors for a binomial model (that ofc uses a log-link function) became heavly influenced by the link function itself, and does not result in a useable p, but gives equal prior p's for 0 AND 1. That is just crazy.
+
+going from a ~ normal(0, 10) to a ~ normal(-1,1) was so much better. We chose mean -1 as to just choose a side.
+
+
+odds a weird concept. 2 out of 100 students never failed a class, then the odds for them is 2/98. odds for students that have failed ONE class: 4/96. Odds ratio (OR) = 
+```{r}
+# Odds ratio
+(2/98)/(4/96)
+```
+
+Setting priors using our sample dataset and calculate back to log-odds. log-odds = log(OR) = log(0.49). Which means that the prior for a beta should include -0.7 in its range.
+```{r}
+log((2/98)/(4/96))
+```
+What if the beta includes 0? odds ratio = exp(log-odds ratio) = exp(0) = 1. then the odds ratio is 1, which means...no difference between the groups?
+
+
+So, we would think that a model (model1) y=x1 would be the same as (model2) y=x1 + x2, as x1 in model1 would be bigger and cover the x1-x2 in model2. BUT that is only the case in linear regression but not for logistic ones. SO, be careful. Always try to look at the outcome of the model to see the final effect.
+```{r}
+# can compare the coefficients of the two models
+coeftabl(fit1, fit2)
+```
+
+
+
 ## 11.1 Binomial distribution
 
 When our outcome variable is of binomial distribution, two types of distributions that are binomial: (1) Logistic regression is the common name when the data are organized into single-trial cases, such that the outcome variable can only take values 0 and 1. (2) When individual trials with the same covariate values are instead aggregated together, it is common to speak of an aggregated binomial regression. In this case, the outcome can take the value zero or any positive integer up to n, the number of trials.
 
-Example: chimpanzee
+Example: chimpanzee, first for single trial log model, thereafter (next subchapter) aggregated binomial
+
+### 11.1.1 Logistic regression: chimpanzee
 
 We’ll want to infer what happens in each combination of prosoc_left and condition. There are four combinations: (1) prosoc_left= 0and condition= 0: Two food items on right and no partner. (2) prosoc_left= 1and condition= 0: Two food items on left and no partner. (3) prosoc_left= 0and condition= 1: Two food items on right and partner present. (4) prosoc_left= 1and condition= 1: Two food items on left and partner present.
 
@@ -3274,3 +3371,771 @@ xtabs( ~ treatment + prosoc_left + condition , d )
 L = count data for how many pulled left
 
 ![](images/clipboard-3332960037.png)
+
+```{r, message=F}
+
+dat_list <- list( 
+  pulled_left = d$pulled_left, 
+  actor = d$actor,
+  treatment = as.integer(d$treatment) 
+  )
+
+m11.4 <- ulam( 
+  alist( 
+    pulled_left ~ dbinom( 1 , p ) , 
+    logit(p) <- a[actor] + b[treatment] , 
+    a[actor] ~ dnorm( 0 , 1.5 ), 
+    b[treatment] ~ dnorm( 0 , 0.5 ) 
+    ), 
+  data=dat_list , chains=4 ) # log_lik = T, if LOOS
+precis( m11.4 , depth=2 )
+```
+
+some plots....
+
+```{r}
+# prior <- extract.prior( m11.4 , n=1e4 )
+
+# we look at the probability-contribution of the actor (alpha = intercept), and not the treatment (beta)
+post <- extract.samples(m11.4) 
+p_left <- inv_logit( post$a ) # alpha only, not beta. total p = inv_logit(a + b)
+
+plot( precis( as.data.frame(p_left) ) , xlim=c(0,1) )
+```
+
+Now let’s consider the treatment effects, hopefully estimated more precisely because the model could subtract out the handedness variation among actors. On the logit scale:
+
+```{r}
+labs <- c("R/N","L/N","R/P","L/P") 
+plot( precis( m11.4 , depth=2 , pars="b" ) , labels=labs )
+```
+
+What we are looking for is evidence that the chimpanzees choose the prosocial option more when a partner is present. This implies comparing the first row with the third row and the second row with the fourth row. You can probably see already that there isn’t much evidence of prosocial intention in these data. But let’s calculate the differences between no-partner/partner and make sure.
+
+Now negative differences would be consistent with more prosocial choice when partner is present. Clearly that is not the case. If anything, individuals chose prosocial more when partner was absent. Overall, there isn’t any compelling evidence of prosocial choice in this experiment.
+
+```{r}
+diffs <- list( db13 = post$b[,1] - post$b[,3], db24 = post$b[,2] - post$b[,4] ) 
+plot( precis(diffs) )
+```
+
+Now some crazy good plot making...this one is really nice.
+
+```{r}
+
+pl <- by( d$pulled_left , list( d$actor , d$treatment ) , mean )
+
+plot( NULL , xlim=c(1,28) , ylim=c(0,1) , xlab="" , ylab="proportion left lever" , xaxt="n" , yaxt="n" ) 
+
+axis( 2 , at=c(0,0.5,1) , labels=c(0,0.5,1) ) 
+abline( h=0.5 , lty=2 ) 
+for ( j in 1:7 ) abline( v=(j-1)*4+4.5 , lwd=0.5 ) 
+for ( j in 1:7 ) text( (j-1)*4+2.5 , 1.1 , concat("actor ",j) , xpd=TRUE ) 
+for ( j in (1:7)[-2] ) { 
+  lines( (j-1)*4+c(1,3) , pl[j,c(1,3)] , lwd=2 , col=rangi2 ) 
+  lines( (j-1)*4+c(2,4) , pl[j,c(2,4)] , lwd=2 , col=rangi2 ) 
+  } 
+points( 1:28 , t(pl) , pch=16 , col="white" , cex=1.7 ) 
+points( 1:28 , t(pl) , pch=c(1,1,16,16) , col=rangi2 , lwd=2 ) 
+
+yoff <- 0.01 
+text( 1 , pl[1,1]-yoff , "R/N" , pos=1 , cex=0.8 ) 
+text( 2 , pl[1,2]+yoff , "L/N" , pos=3 , cex=0.8 ) 
+text( 3 , pl[1,3]-yoff , "R/P" , pos=1 , cex=0.8 ) 
+text( 4 , pl[1,4]+yoff , "L/P" , pos=3 , cex=0.8 ) 
+mtext( "observed proportions\n" )
+```
+
+Get the posterior distribution with link_ulam()
+
+```{r}
+dat <- list( 
+  actor=rep(1:7,each=4) , 
+  treatment=rep(1:4,times=7) 
+  ) 
+p_post <- link_ulam( m11.4 , data=dat ) 
+p_mu <- apply( p_post , 2 , mean ) 
+p_ci <- apply( p_post , 2 , PI )
+```
+
+(For LOOS, that is old. Use PSIS) Comparing stan models. To allow ulam to calculate LOOIS or WAIC, you need to add log_lik=TRUE to the call. This tells it is add code to the Stan model to compute the log-probability of each observation. If you want to know exactly what is being added, so you can eventually start using Stan more directly, see the Overthinking box further down.)
+
+```{r, message=F}
+d$side <- d$prosoc_left + 1 # right 1, left 2 
+d$cond <- d$condition + 1 # no partner 1, partner 2
+
+dat_list2 <- list( 
+  pulled_left = d$pulled_left, 
+  actor = d$actor, 
+  side = d$side, 
+  cond = d$cond ) 
+
+m11.5 <- ulam( 
+  alist( pulled_left ~ dbinom( 1 , p ) , 
+         logit(p) <- a[actor] + bs[side] + bc[cond] , 
+         a[actor] ~ dnorm( 0 , 1.5 ), 
+         bs[side] ~ dnorm( 0 , 0.5 ), 
+         bc[cond] ~ dnorm( 0 , 0.5 ) 
+         ), data=dat_list2 , chains=4 ) #log_lik
+
+
+```
+
+WAIC produces identical results. As we guessed, the model without the interaction (11.4) is really no worse, in expected predictive accuracy, than the model with it (11.5). You should inspect the posterior distribution for m11.5 to make sure you can relate its parameters to those of m11.4. They tell the same story.
+
+```{r}
+compare( m11.5 , m11.4 , func=PSIS )
+
+```
+
+### 11.1.3. Aggregated binomial: Chimpanzees again, condensed.¨
+
+In the chimpanzees data context, the models all calculated the likelihood of observing either zero or one pulls of the left-hand lever. The models did so, because the data were organized such that each row describes the outcome of a single pull.But in principle the same data could be organized differently. As long as we don’t care about the order of the individual pulls, the same information is contained in a count of how many times each individual pulled the left-hand lever, for each combination of predictor variables.
+
+For example, to calculate the number of times each chimpanzee pulled the left-hand lever, for each combination of predictor values:
+
+```{r}
+d_aggregated <- aggregate( 
+  d$pulled_left , 
+  list( treatment=d$treatment ,
+        actor=d$actor , 
+        side=d$side , 
+        cond=d$cond ) , 
+  sum ) 
+colnames(d_aggregated)[5] <- "left_pulls"
+```
+
+The left_pulls column on the right is the count of times each actor pulled the left-hand lever for trials in each treatment. Recall that actor number 2 always pulled the left-hand lever. As a result, the counts for actor 2 are all 18—there were 18 trials for each animal for each treatment.
+
+```{r}
+d_aggregated %>% 
+  slice(1:10)
+```
+
+Take note of the 18 in the spot where a 1 used to be. Now there are 18 trials on each row, and the likelihood defines the probability of each count x out of 18 trials.
+
+```{r, warning=F , message=F, results=F}
+
+dat <- with( 
+  d_aggregated , 
+  list( 
+    left_pulls = left_pulls, 
+    treatment = treatment, 
+    actor = actor, 
+    side = side, 
+    cond = cond ) 
+  ) 
+
+m11.6 <- ulam( 
+  alist( left_pulls ~ dbinom( 18 , p ) , #  m11.4: pulled_left ~ dbinom( 1 , p ) , 
+         logit(p) <- a[actor] + b[treatment] , 
+         a[actor] ~ dnorm( 0 , 1.5 ) ,
+         b[treatment] ~ dnorm( 0 , 0.5 ) 
+         ), 
+  data=dat , chains=4 , log_lik=TRUE )
+
+
+
+
+```
+
+There’s a lot of output here. But let’s take it slowly, top to bottom. First, the PSIS summary table shows very different scores for the two models, even though they have the same posterior distribution. Why is this? The major reason is the the aggregated model, m11.6, contains an extra factor in its log-probabilities, because of the way the data are organized. When calculating dbinom(6,9,0.2) for the AGGREGATED model, for example, the dbinom function contains a term for all the orders the 6 successes could appear in 9 trials.
+
+This makes the aggregated probabilities larger—there are more ways to see the data. So the PSIS/WAIC scores end up being smaller. PSIS says aggregated model is better than disaggregated.
+
+(see equations for probabilities below)
+
+```{r}
+compare( m11.6 , m11.4 , func=PSIS )
+```
+
+Aggregated:
+
+![](images/clipboard-3247031723.png)
+
+Joint dis-aggregated probability, sum 9 times the single-trial logistic regression:
+
+![](images/clipboard-2779041892.png)
+
+```{r}
+# skjønner ikke hvorfor de sier Pr_agg > Pr_disagg?? Fordi det er motsatt.
+factorial(6)/(factorial(6)*factorial(9-6))
+
+```
+
+```{r}
+# deviance of aggregated 6-in-9 
+-2*dbinom(6,9,0.2,log=TRUE) 
+# deviance of dis-aggregated 
+-2*sum(dbern(c(1,1,1,1,1,1,0,0,0),0.2,log=TRUE))
+```
+
+But this difference is entirely meaningless. It is just a side effect of how we organized the data. The posterior distribution for the probability of success on each trial will end up the same, either way.
+
+...more explainations of the warnings...
+
+Continuing with the compare output, there are two warnings. The first is just to flag the fact that the two models have different numbers of observations. Never compare models fit to different sets of observations. The second warning is more interesting. 2: Some Pareto k diagnostic values are too high. See help('pareto-k-diagnostic') for details. \[blablabla history of Pareto...\]
+
+Before looking at the Pareto diagnostics, you might have noticed already that we didn’t get a similar warning before in the disaggregated logistic models. Why not? Because when we aggregated the data by actor-treatment, we forced LOOIS (and WAIC) to consider crossvalidating leaving out all 18 observations in each actor-treatment combination. So now “LOO” (leave-one-out) is more like “L-18-O.” This makes some observations more influential, because they are really now 18 observations.
+
+To extract and inspect the Pareto diagnostics: (see code). One value for each of the 28 actor-treatment combinations. Larger values indicate less reliable pointwise estimates and more influential points. In theory, values between 0.5 and 1 are worrisome, and anything above 1 is wildly untrustworthy.
+
+```{r}
+# One value for each of the 28 actor-treatment combinations.
+( k <- LOOPk(m11.6) )
+```
+
+**Bottom line: If you want to calculate WAIC or LOOIS, use a logistic regression (1) data format and NOT the aggregated binomial regression (2).**
+
+Otherwise you are implicitly assuming that only large chunks of the data are separable. There are times when this makes sense, like with multilevel models. But it doesn’t in most ordinary binomial regressions. **In fact, the WAIC and LOO methods for quap models automatically split aggregated binomial observations into individual 0/1 trials**. The methods for ulam models do not, because they trust that you know what you are doing.
+
+### 11.1.4. Aggregated binomial: Graduate school admissions.
+
+In the aggregated binomial example above, the number of trials was always 18 on every row. This is often not the case. The way to handle this is to insert a variable from the data in place of the “18”.
+
+applications = admit + reject
+
+```{r}
+library(rethinking) 
+data(UCBadmit) 
+d <- UCBadmit
+
+d 
+```
+
+Goal: check for gender bias by p applications as outcome (0-to-1) by categorical variable gender.
+
+```{r}
+d$gid <- ifelse( d$applicant.gender=="male" , 1 , 2 ) 
+
+m11.7 <- quap( 
+  alist( 
+    admit ~ dbinom( applications , p ) , 
+    logit(p) <- a[gid] , 
+    a[gid] ~ dnorm( 0 , 1.5 ) 
+    ) , 
+  data=d ) 
+precis( m11.7 , depth=2 )
+```
+
+The log-odds (a) difference is certainly positive, corresponding to a higher probability of admission for male applicants. On the probability scale itself (p), the difference is 14%, + somewhere between 12% and 16%.
+
+```{r}
+post <- extract.samples(m11.7) 
+diff_a <- post$a[,1] - post$a[,2] 
+diff_p <- inv_logit(post$a[,1]) - inv_logit(post$a[,2]) 
+precis( list( diff_a=diff_a , diff_p=diff_p ) )
+```
+
+12 departements (6) x gender(2) = 12 rows. First point = male, second point = female. The result is shown as Figure 11.5. Those are pretty terrible predictions. There are only two departments in which females had a lower rate of admission than males (C and E), and yet the model says that females should expect to have a 14% lower chance of admission.
+
+**ahaaaa....** Sometimes a fit this bad is the result of a coding mistake. In this case, it is not. The model did correctly answer the question we asked of it: What are the average probabilities of admission for females and males, across all departments? The problem in this case is that males and females do not apply to the same departments, and departments vary in their rates of admission. This makes the answer misleading. You can see the steady decline in admission probability for both males and females from department A to department F. Females in these data tended not to apply to departments like A and B, which had high overall admission rates. Instead they applied in large numbers to departments like F, which admitted less than 10% of applicants.
+
+THIS happened as we did not adjust/control for departements in our model.
+
+```{r}
+#figure 11.5
+postcheck( m11.7 , n=1e4 ) 
+# draw lines connecting points from same dept 
+d$dept_id <- rep( 1:6 , each=2 ) 
+
+for ( i in 1:6 ) { 
+  x <- 1 + 2*(i-1) 
+  y1 <- d$admit[x]/d$applications[x] 
+  y2 <- d$admit[x+1]/d$applications[x+1] 
+  lines( c(x,x+1) , c(y1,y2) , col=rangi2 , lwd=2 ) 
+  text( x+0.5 , (y1+y2)/2 + 0.05 , d$dept[x] , cex=0.8 , col=rangi2 ) 
+  }
+```
+
+So, lets incorporate departements. Instead of asking “What are the average probabilities of admission for females and males **across** all departments?” we want to ask “What is the average difference in probability of admission between females and males **within** departments?”
+
+m11.8 is over-parameterized. The book also says that we should actually just estimate one alpha (instead of two, one for each gender), and let the one gender be the baseline at zero. .... Continuing on over-parametrization. If you look at pairs(m11.8), you’ll see high posterior correlations among all of the parameters. But on the outcome scale, the predictions are much tighter, as you can see if you invoke postcheck(m11.8).Why might we want to over-parameterize the model? Because it makes it easier to assign priors. If we made one of the genders baseline and measured the other as a deviation from it, we would stumble into the issue of assuming that the acceptance rate for one of the genders is pre-data more uncertain than the other. This isn’t to say that over-parameterizing a model is always a good idea. But it isn’t a violation of any statistical principle. You can always convert the posterior, post sampling, to any alternative parameterization. **The only limitation is whether the algorithm we use to approximate the posterior can handle the high correlations.**
+
+```{r, warning=F, message=F}
+d$dept_id <- rep(1:6,each=2) 
+
+# this one takes into account department. This is right because the DAG is Gender -> department -> acceptance rate
+m11.8 <- quap( 
+  alist( 
+    admit ~ dbinom( applications , p ) , 
+    logit(p) <- a[gid] + delta[dept_id] , 
+    a[gid] ~ dnorm( 0 , 1.5 ) , 
+    delta[dept_id] ~ dnorm( 0 , 1.5 ) 
+    ) , 
+  data=d ) 
+
+precis( m11.8 , depth=2 )
+```
+
+```{r}
+pairs(m11.8)
+```
+
+DAG where 11.8 is a good model. And another DAG where 11.8 can be bad, open up a collider/back door; this can happen if there are som unknown parameter, e.g. academic ability that influences which department one choose to apply to + it influences the admission rate (A).
+
+```{r}
+library(dagitty)
+  dag_1 <- dagitty( "dag {
+                        G -> D -> A
+                        G -> A
+                        }") 
+coordinates( dag_1) <- list( 
+      x=c(G=0,D=1,A=2) , 
+      y=c(G=1,D=-1,A=1) ) 
+
+dag_2 <- dagitty("dag {
+                 G -> D -> A
+                 G -> A
+                 A <- U -> D
+                 }")
+coordinates( dag_2) <- list( 
+      x=c(G=0,D=1,A=2, U=2) , 
+      y=c(G=1,D=-1,A=1, U = -1) ) 
+
+
+par(mfrow = c(1,2))
+
+    drawdag( dag_1 )
+    drawdag( dag_2)
+```
+
+lol, odd-ratio = relative shark scale. probability = absolute penguin scale (penguins would want to know this). Comparisons of absolute shark deaths is lower compared to number of incidents of deaths by deer. having this comparison is mostly good for handling peoples fear of sharks BUT otherwise the statistic is not that useful as these animals are in different places. We would rather want the relative risk of death GIVEN/conditional that we are on land or in water.
+
+However, this comparison is irrelevant in nearly all circumstances, because bees and sharks don’t live in the same places. When you are in the water, like a penguin often is, you want to know instead the relative risk of dying from a shark attack. Conditional on being in the ocean, sharks are much more dangerous than bees. And this is why from a penguin’s perspective, the relative risk of death from shark bite is valuable information. For us too, relative shark risk is what we want to know, for those rare times when we are in the ocean. For the penguin, the base rate of being in shark infested waters is much higher. As a consequence, the relative risk is highly relevant for the absolutely delicious penguin.
+
+If male applicants have it worse, it is only by a very small amount, about 2% on average.
+
+```{r}
+post <- extract.samples(m11.8) 
+diff_a <- post$a[,1] - post$a[,2] 
+diff_p <- inv_logit(post$a[,1]) - inv_logit(post$a[,2]) 
+precis( list( diff_a=diff_a , diff_p=diff_p ) )
+```
+
+vs 11.7
+
+diff_a 0.61 0.06 0.51 0.71 ▁▁▁▃▇▇▅▂▁▁ diff_p 0.14 0.01 0.12 0.16 ▁▁▁▂▃▇▇▅▂▁▁
+
+```{r}
+# this just calculate the female and male ratio within each departement (from dataset)
+pg <- sapply( 1:6 , function(k) 
+  d$applications[d$dept_id==k]/sum(d$applications[d$dept_id==k]) ) 
+rownames(pg) <- c("male","female") 
+colnames(pg) <- unique(d$dept) 
+round( pg , 2 )
+```
+
+## 11.2 Poisson regression (a special case of binomial)
+
+The expected value of a binomial distribution is just Np, and its variance is Np(1-p). But when N is very large and p is very small, then these are approximately the same. --\> Poisson distribution. The mean and the variance are nearly identical. This is a special shape of the binomial. This special shape is known as the Poisson distribution, and it is useful because it allows us to model binomial events for which the number of trials N is unknown or uncountably large.
+
+```{r}
+
+# For example, suppose you own a monastery that is in the business, like many monasteries before the invention of the printing press, of copying manuscripts. You employ 1000 monks, and on any particular day about 1 of them finishes a manuscript. Since the monks are working independently of one another, and manuscripts vary in length, some days produce 3 or more manuscripts, and many days produce none. Since this is a binomial process, you can calculate the variance across days as Np(1-p) = 1000(0.001)(1-0.001) = 1. You can simulate this, for example over 10,000 (1e5) days:
+
+y <- rbinom(1e5,1000,1/1000) 
+c( mean(y) , var(y) )
+```
+
+log(x) \~ normal(0,10), da er x log-normal. Kan da også skrives x \~ dlnorm(0,10)
+
+![](images/clipboard-803874413.png)
+
+### 11.2.1. Example: Oceanic tool complexity.
+
+We will look into a model for number of different tool types as function of population size, contact level (socialness).
+
+Keep in mind that the number of rows is not clearly the same as the “sample size” in a count model. The relationship between parameters and “degrees of freedom” is not simple, outside of simple linear regressions. Still, there isn’t a lot of data here, because there just aren’t that many historic Oceanic societies for which reliable data can be gathered. We’ll want to use regularization to damp down overfitting, as always. But as you’ll see, a lot can still be learned from these data.
+
+```{r}
+library(rethinking) 
+data(Kline) 
+Kline
+
+```
+
+The assumptions:
+
+(1) The number of tools increases with the log population size. Why log? Because that’s what the theory says, that it is the order of magnitude of the population that matters, not the absolute size of it. So we’ll look for a positive association between total_tools and log population. You can get some intuition for why a linear impact of population size can’t be right by thinking about mechanism. We’ll think about mechanism more at the end.
+
+(2) The number of tools increases with the contact rate among islands. Islands that are better networked acquire or sustain more tool types.
+
+(3) The impact of population on tool counts is increased by high contact. This is to say that the association between total_tools and log population depends upon contact. So we will look for a positive interaction between log population and contact rate.
+
+Det vil gi oss en modell som ser slik ut:
+
+![](images/clipboard-798026512.png)
+
+```{r}
+d <- Kline %>% 
+  mutate(P = log(population),
+         contact_id = ifelse(contact == "high", 2, 1)
+         )
+```
+
+We need to figure out some sensible priors. As with binomial models, the transformation of scale between the scale of the linear model and the count scale of the outcome means that something flat on the linear model scale will not be flat on the outcome scale.
+
+So, as to set the priors. We start with the intercept alpha and its relation to the outcome.
+
+![](images/clipboard-1713202895.png)
+
+For the alpha \~ Normal(0; 10) prior, there is a huge spike right around zero—that means zero tools on average—and a very long tail. How long? Well the mean of a log-normal distribution is exp( (mu + sigma\^2)/ 2), which evaluates to exp(50), which is impossibly large. If you doubt this, just simulate it:
+
+```{r}
+# yes with a prior log(lambda) ~ dnorm(0,10) gives a mean #tools of trillions tools
+a <- rnorm(1e4,0,10) 
+lambda <- exp(a) 
+mean( lambda )
+```
+
+We haven’t looked at the mean of the total_tools column, and we don’t want to. This is supposed to be a prior. We want the prior predictive distribution to live in the plausible outcome space, not fit the sample.
+
+```{r}
+# this new normal distribution is alot better
+a <- rnorm(1e4,3,0.5) 
+lambda <- exp(a) 
+mean( lambda )
+```
+
+A flat conventional prior (black) creates absurd expectations on the outcome scale. The mean of this distribution is exp(50) = stupidly large. It is easy to do better by shifting prior mass above zero (blue).
+
+```{r}
+
+curve( dlnorm( x , 0 , 10 ) , from=0 , to=100 , n=200 )
+par(new=TRUE)
+curve( dlnorm( x , 3 , 0.5 ) , from=0 , to=100 , n=200, col = "blue" )
+
+
+```
+
+Now, we start setting the prior B for log(population) = P. Again for dramatic effect, let’s consider first a conventional flat prior like  beta\~ Normal(0; 10). Conventional priors are even flatter. We’ll simulate together with the intercept and plot 100 prior trends of assumed standardized log population against total tools:
+
+(standardizing: It will also help to view these priors on more natural outcome scales. The standardized log population variable is good for fitting. But it is bad for thinking. Population size has a natural zero, and we want to keep that in sight. Standardizing the variable destroys that.) These curves would be linear if you log them.
+
+```{r}
+# we do not use the actual population variable from the dataset
+# the standardized log population are just a range set as -2 to 2 here.
+
+N <- 100 
+a <- rnorm( N , 3 , 0.5 ) 
+b <- rnorm( N , 0 , 10 ) 
+plot( NULL , xlim=c(-2,2) , ylim=c(0,100),
+      main = "b ~ dnorm(0, 10)",
+      xlab = "log population (std)",
+      ylab = "total tools"
+      ) 
+
+for ( i in 1:N ) curve( exp( a[i] + b[i]*x ) , 
+                        add=TRUE , 
+                        col=col.alpha("black",0.5) )
+
+```
+
+\^The pivoting around zero makes sense—that’s just the average log population. The values on the horizontal axis are z-score, because the variables is standardized. So you can see that this prior thinks that the vast majority of prior relationships between log population and total tools embody either explosive growth just above the mean log population size or rather catastrophic decline right before the mean. This prior is terrible. Of course you will be able to confirm, once we start fitting models, that even 10 observations can overcome these terrible priors. But please remember that we are practicing for when it does matter.
+
+So let’s try something much tighter.
+
+Try new prior: beta \~ normal(0, 0.2). I’m tempted actually to force the prior for  to be positive. But I’ll resist that temptation and let the data prove that to you. Instead let’s just damping the prior’s enthusiasm for impossibly explosive relationships.
+
+Does this prior tells us that there is a higher chance of having more tools when the population is far lower or far above the mean population.??? NO, it is difficult to interpret log.
+
+```{r}
+set.seed(10)
+N <- 100 
+a <- rnorm( N , 3 , 0.5 ) 
+b <- rnorm( N , 0 , 0.2 ) 
+plot( NULL , xlim=c(-2,2) , ylim=c(0,100),
+      main = "b ~ dnorm(0, 0.2)",
+      xlab = "log population (std)",
+      ylab = "total tools"
+      ) 
+
+for ( i in 1:N ) curve( exp( a[i] + b[i]*x ) , 
+                        add=TRUE , 
+                        col=col.alpha("black",0.5) )
+```
+
+The same graph, but instead of STANDARDIZED LOG POPULATION, we use
+
+It will also help to view these priors on more natural outcome scales. The standardized log population variable is good for fitting. But it is bad for thinking. Population size has a natural zero, and we want to keep that in sight. Standardizing the variable destroys that. First, here are 100 prior predictive trends between total tools and **un-standardized log population**: These curves would be linear if you log them.
+
+```{r}
+a <- rnorm( N , 3 , 0.5 ) 
+b <- rnorm( N , 0 , 0.2 ) 
+x_seq <- seq( from=log(100) , to=log(200000) , length.out=100 )
+
+lambda <- sapply( x_seq , function(x) exp( a + b*x ) ) 
+plot( NULL , xlim=range(x_seq) , ylim=c(0,500) , 
+      xlab="log population" , 
+      ylab="total tools",
+          main = "b ~ dnorm(0, 0.2)") 
+
+for ( i in 1:N ) lines( x_seq , lambda[i,] , col=col.alpha("darkgreen",0.5) , lwd=1.5 )
+```
+
+Notice that 100 total tools is probably the most we expect to ever see in these data. While most the of trends are in that range, some explosive options remain (like \> 300, even above 500)
+
+On the raw population scale, these curves bend the other direction. This is the natural consequence of putting the log of population inside the linear model. Poisson models with log links create log-linear relationships with their predictor variables. When a predictor variable is itself logged, this means we are assuming diminishing returns for the raw variable. On the natural population scale, the model imposes diminishing returns on population: Each addition person contributes a smaller increase in the expected number of tools.
+
+**The curves bend down and level off. Lots of predictor variables are better used as logarithms, for this reason.**
+
+```{r}
+a <- rnorm( N , 3 , 0.5 ) 
+b <- rnorm( N , 0 , 0.2 ) 
+
+plot( NULL , xlim=range(exp(x_seq)) , ylim=c(0,500) , 
+          main = "b ~ dnorm(0, 0.2)",
+      xlab="population" , 
+      ylab="total tools" ) 
+
+for ( i in 1:N ) lines( exp(x_seq) , lambda[i,] , col=col.alpha("darkgreen",0.5) , lwd=1.5 )
+```
+
+Time for posterior distributions. The intercept only model is here because I want to show you something interesting about Poisson models and how parameters relate to model complexity.
+
+```{r, message=F, results='hide'}
+dat <- list( 
+  T = d$total_tools , 
+  P_std = standardize(d$P) , 
+  contact_id = d$contact_id ) 
+
+# intercept only 
+
+m11.9 <- ulam( 
+  alist( 
+    T ~ dpois( lambda ), 
+    log(lambda) <- a, 
+    a ~ dnorm(3,0.5) 
+    ), data=dat , chains=4 , log_lik=TRUE )
+
+# interaction model 
+m11.10 <- ulam( 
+  alist( 
+    T ~ dpois( lambda ), 
+    log(lambda) <- a[contact_id] + b[contact_id]*P_std,
+    a[contact_id] ~ dnorm( 3 , 0.5 ), 
+    b[contact_id] ~ dnorm( 0 , 0.2 ) 
+    ), data=dat , chains=4 , log_lik=TRUE )
+
+```
+
+We get the pareto warnings: Some Pareto k values are high (\>0.5). Set pointwise=TRUE to inspect individual points. Some Pareto k values are very high (\>1). Set pointwise=TRUE to inspect individual points. --\> This indicates some highly influential points. That shouldn’t be surprising—this is a small dataset.But it means we’ll want to take a look at the posterior predictions with that in mind.
+
+We could expect m11.10 to be best model. But, why is the “effective number of parameters” pPSIS 7.9 for the 4-parameter model, and 8.7 for the intercept-only model?? (this would happen with WAIC as well, btw)
+
+This means that there are an overfitting risk in the model due to the pareto k values. The book mentions how the chance of overfitting is larger for a weak/flat prior, + any count near zero is harder to overfit.
+
+```{r}
+compare(m11.9, m11.10, func = "PSIS")
+```
+
+SO, lets plot the posteriors as well as highlight the pareto k values.
+
+```{r, warning=F}
+
+k <- PSIS(m11.10, pointwise = T)$k
+
+# set up the horizontal axis values to compute predictions at 
+ns <- 100 
+P_seq <- seq( from=-1.4 , to=3 , length.out=ns )
+
+# predictions for contact_id=1 (low contact)
+lambda_low <- link( m11.10 , data=data.frame( P_std=P_seq , contact_id=1 ) ) 
+lmu_low <- apply( lambda_low , 2 , mean ) 
+lci_low <- apply( lambda_low , 2 , PI ) 
+
+# predictions for contact_id=2 (high contact) 
+lambda_high <- link( m11.10 , data=data.frame( P_std=P_seq , contact_id=2 ) ) 
+lmu_high <- apply( lambda_high , 2 , mean ) 
+lci_high <- apply( lambda_high , 2 , PI ) 
+
+
+# pch = 1 open point. contact_id = 1 is a low contact society
+plot( dat$P_std , dat$T , 
+      xlab="log population (std)" , 
+      ylab="total tools" ,
+      main = "blue = low contact, black = high",
+      col=rangi2 , pch=ifelse( dat$contact_id==1 , 1 , 16 ) , lwd=2 , 
+      ylim=c(0,75) , xlim=c(-1.4, 3), 
+      cex=1+normalize(k) ) 
+
+# plotting low contact
+lines( P_seq , lmu_low , lty=2 , lwd=1.5, col = col.alpha("blue", alpha = 1)) 
+shade( lci_low , P_seq , xpd=TRUE, col = col.alpha("lightblue", alpha = 0.5) ) 
+
+# plotting high contact
+lines( P_seq , lmu_high , lty=1 , lwd=1.5 ) 
+shade( lci_high , P_seq , xpd=TRUE )
+
+```
+
+\^Open points are low contact societies. Filled points are high contact societies. Open points are low contact societies. Filled points are high contact societies. The points are scaled by their Pareto k values. The dashed curve is the low contact posterior mean. The solid curve is the high contact posterior mean.
+
+Here is the same plot for natural population scale. Just exp() the P_seq with some reversing of the standardization using sd and mean???
+
+```{r}
+plot( d$population , d$total_tools , xlab="population" , ylab="total tools" , col=rangi2 , pch=ifelse( dat$contact_id==1 , 1 , 16 ) , lwd=2 ,ylim=c(0,75) , cex=1+normalize(k) )
+
+ns <- 100 
+P_seq <- seq( from=-5 , to=3 , length.out=ns ) 
+# 1.53 is sd of log(population) 
+# 9 is mean of log(population) 
+pop_seq <- exp( P_seq*1.53 + 9 )
+
+#low
+lambda <- link( m11.10 , data=data.frame( P_std=P_seq , contact_id=1 ) ) 
+lmu <- apply( lambda , 2 , mean ) 
+lci <- apply( lambda , 2 , PI ) 
+lines( pop_seq , lmu , lty=2 , lwd=1.5, col = col.alpha("blue", alpha = 1) ) 
+shade( lci , pop_seq , xpd=TRUE, col = col.alpha("lightblue", alpha = 0.5) ) 
+
+#high
+lambda <- link( m11.10 , data=data.frame( P_std=P_seq , contact_id=2 ) ) 
+lmu <- apply( lambda , 2 , mean ) 
+lci <- apply( lambda , 2 , PI ) 
+lines( pop_seq , lmu , lty=1 , lwd=1.5 ) 
+shade( lci , pop_seq , xpd=TRUE )
+
+```
+
+\^Notice that the trend for societies with high contact (solid) is higher than the trend for low contact (dashed) when population size is low... (but then the model allows it to actually be smaller?? whut) The means cross one another at high population sizes, and therefor predicting that high population and high contact societies will have FEWER tools than high population low contact.
+
+This happens because the model has no idea where the trend for high contact societies goes at high population sizes, because there are no data points for it. There is only low-contact Hawaii. But it is still a silly pattern that we know shouldn’t happen. A counter-factual Hawaii with the same population size but high contact should theoretically have at least as many tools as the real Hawaii. It shouldn’t have fewer. --\> which makes this a strong assumption for fixing the high-contact posterior curve.
+
+The model can produce this silly pattern, because it lets the intercept be a free parameter. Why is this bad? Because it means there is no guarantee that the trend for lambda will pass through the origin where total tools equals zero and the population size equals zero. When there are zero people, there are also zero tools! As population increases, tools increase. So we get the intercept for free, if we stop and think.
+
+Let’s stop and think. Instead of the conventional GLM above, we could use the predictions of an actual model of the relationship between population size and tool kit complexity. By “actual model,” I mean a model constructed specifically from scientific knowledge and hypothetical causal effects. The downside of this is that it will feel less like statistics—suddenly domain-specific skills are relevant. The upside is that it will feel more like science.
+
+how the figures are displayed in the book:
+
+![](images/clipboard-3901386430.png)
+
+Hawaii (k = 1,01), Tonga (k = 0,69), Tap (k = 0,6), and the Trobriand Islands (k = 0,56) are highly influential points. Most are not too influential, but Hawaii is very influential. You can see why in the figure: It has extreme population size and the most tools. This is most obvious on the natural scale. This doesn’t mean Hawaii is some “outlier” that should be dropped from the data. But it does mean that strongly Hawaii influences the posterior distribution.
+
+// these are the k values based on the models that were estimated in the book. might be different in our case.
+
+```{r}
+PSIS(m11.10, pointwise = T)$k %>% 
+  bind_cols(d$culture)
+```
+
+A fixed version of m11.10 (now with trends going through zero tools + high contact trend stays above low contact at all times = no crossing of lines)
+
+```{r, warning=F, message=F, results='hide'}
+dat2 <- list( T=d$total_tools, P=d$population, contact_id=d$contact_id ) 
+
+m11.11 <- ulam( 
+  alist( 
+    T ~ dpois( lambda ), 
+    lambda <- exp(a[contact_id])*P^b[contact_id]/g, 
+    a[contact_id] ~ dnorm(1,1), 
+    b[contact_id] ~ dexp(1), 
+    g ~ dexp(1) 
+    ), data=dat2 , chains=4 , log_lik=TRUE )
+```
+
+```{r}
+plot( d$population , d$total_tools , xlab="population" , ylab="total tools" , col=rangi2 , pch=ifelse( dat$contact_id==1 , 1 , 16 ) , lwd=2 ,ylim=c(0,75) , cex=1+normalize(k) )
+
+ns <- 100 
+P_seq <- seq( from=-5 , to=3 , length.out=ns ) 
+# 1.53 is sd of log(population) 
+# 9 is mean of log(population) 
+pop_seq <- exp( P_seq*1.53 + 9 )
+
+#low
+lambda <- link( m11.11 , data=data.frame( P=pop_seq , contact_id=1 ) ) 
+lmu <- apply( lambda , 2 , mean ) 
+lci <- apply( lambda , 2 , PI ) 
+lines( pop_seq , lmu , lty=2 , lwd=1.5, col = col.alpha("blue", alpha = 1) ) 
+shade( lci , pop_seq , xpd=TRUE, col = col.alpha("lightblue", alpha = 0.5) ) 
+
+#high
+lambda <- link( m11.11 , data=data.frame( P=pop_seq , contact_id=2 ) ) 
+lmu <- apply( lambda , 2 , mean ) 
+lci <- apply( lambda , 2 , PI ) 
+lines( pop_seq , lmu , lty=1 , lwd=1.5 ) 
+shade( lci , pop_seq , xpd=TRUE )
+```
+
+### 11.2.2. Negative binomial (gamma-Poisson) models.
+
+just some information, We’ll work with mixtures in the next chapter. Typically there is a lot of unexplained variation in Poisson models. So a very common extension of Poisson GLMs is to swap the Poisson distribution for something called the negative binomial distribution. The is really a Poisson distribution in disguise, and it is also sometimes called the gamma-Poisson distribution for this reason. It is a Poisson in disguise, because it is a mixture of different Poisson distributions.
+
+### 11.2.3. Example: Exposure and the offset. When lambda = rate = x/period
+
+Period = time, distance... = called EXPOSURE in this chapter
+
+The parameter lambda is the expected value of a Poisson model, but it’s also commonly thought of as a rate. Suppose for example that a neighboring monastery performs WEEKLY totals of completed manuscripts while your monastery does DAILY totals. If you come into possession of both sets of records, how could you analyze both in the same model, given that the counts are aggregated over different amounts of time, different exposures?
+
+![](images/clipboard-3202120882.png)
+
+log(tau) = log(exposure) = offset. The term we add to the linear equation is typically called an offset.
+
+The data available to you about the rate at which manuscripts are completed is totaled up each day. Suppose the true rate is lambda = 1,5 manuscripts per day. We can simulate a month of daily counts:
+
+```{r}
+num_days <- 30 # days in month
+
+y <- rpois( num_days , 1.5 )
+
+#So now y holds 30 days of simulated counts of completed manuscripts.
+y
+
+```
+
+Also suppose that your monastery is turning a tidy profit, so you are considering purchasing another monastery. Before purchasing, you’d like to know how productive the new monastery might be. Unfortunately, the current owners don’t keep daily records, so a head-to-head comparison of the daily totals isn’t possible. Instead, the owners keep WEEKLY totals.
+
+Suppose the daily rate at the new monastery is actually lambda = 0,5 manuscripts per day. To simulate data on a weekly basis, we just multiply this average by 7, the exposure:
+
+```{r}
+num_weeks <- 4 
+y_new <- rpois( num_weeks , 0.5*7 ) # daily*7 days/week = weekly
+
+y_new # vector of four values
+```
+
+To analyze both y, totaled up daily, and y_new, totaled up weekly, we just add the logarithm of the exposure to linear model. First, let’s build a data frame to organize the counts and help you see the exposure for each case:
+
+```{r}
+y_all <- c( y , y_new )
+y_all  #1:34
+
+
+```
+
+```{r}
+exposure <- c( rep(1,30) , rep(7,4) ) # 1 day*30, 7 days*4
+monastery_new <- c( rep(0,30) , rep(1,4) ) # boolean, 0 for old monastery, 1 fro new.
+d <- data.frame( y=y_all , days=exposure , monastery_new=monastery_new )
+```
+
+```{r}
+# compute the offset 
+d$log_days <- log( d$days ) 
+# fit the model 
+m11.12 <- quap( 
+  alist(
+    y ~ dpois( lambda ), 
+    log(lambda) <- log_days + a + b*monastery_new, 
+    a ~ dnorm( 0 , 1 ), 
+    b ~ dnorm( 0 , 1 ) 
+    ), data=d )
+```
+
+The new monastery produces about half as many manuscripts per day. So you aren’t going to pay that much for it [the new monastery].
+
+```{r}
+post <- extract.samples( m11.12 ) 
+lambda_old_monast <- exp( post$a ) # where b*0
+lambda_new_monast <- exp( post$a + post$b ) 
+precis( data.frame( lambda_old_monast , lambda_new_monast ) )
+```
+
+## Multinomial and categorical variables
+
+When reading from the start, this is the closest I have gotten to a choice model. 
+
+
+

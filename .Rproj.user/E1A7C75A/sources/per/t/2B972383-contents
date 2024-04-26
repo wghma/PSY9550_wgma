@@ -1,0 +1,151 @@
+---
+title: "Exercises for chapter 11"
+author: "Winnie"
+date: 04-24-2024
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+# add other packages you use here
+```
+
+# Clarification and or discussion questions
+
+
+# Easy.
+## 11E1. If an event has probability 0.35, what are the log-odds of this event? 
+
+Based on this formula: log(p/(1-p)). 
+Log-odds = -0.619
+
+```{r}
+p <- 0.35
+log(p/(1-p))
+```
+
+
+## 11E2. If an event has log-odds 3.2, what is the probability of this event? 
+
+```{r}
+inv_logit(3.2)
+
+# eller: exp(3.2) / (exp(3.2) + 1)
+```
+
+
+## 11E3. Suppose that a coefficient in a logistic regression has value 1.7. What does this imply about the proportional change in odds of the outcome?
+
+If log-odds are 1.7, then the odds are 5.5, meaning that there is a 5.5 times higher chance of one outcome per 1 unit increase of a predictor variable.
+```{r}
+
+exp(1.7)
+
+
+```
+
+
+
+# Medium. 
+
+## 11M1. Binom aggreg. vs disagg. -> different likelihood
+**As explained in the chapter, binomial data can be organized in aggregated and disaggregated forms, without any impact on inference. But the likelihood of the data does change when the data are converted between the two formats. Can you explain why? **
+
+The calculations of the likelihood of the models vary since the probabilities of a certain data-observation is calculated differently between the models. The aggregated models have a probability based on many more ways of observing the data, while the for the disaggregated one it is more rigid, and only calculate one way of observing the data.
+
+when using PSIS to calculate the model fit, for the disaggregated the model is checked using leave-one-out, while the aggregated one uses leave all T (total trials) out.????
+
+## 11M2. Poisson, if beta = 1.7 -> y?
+**If a coefficient in a Poisson regression has value 1.7, what does this imply about the change in the outcome? **
+
+I assume:
+Outcome ~ poisson (lambda)
+log(lambda) ~ beta
+beta ~ normal()
+
+The mean of the poisson distribution is 5.5, and indicates that a beta of 1.7 (assuming there are no other predictor variables) results in an expected count or rate of 5.5. 
+
+
+```{r, warning=F}
+beta <- 1.7
+lambda <- exp(beta)
+N = 5000
+# x <- seq(-1, 20, 0.01)
+y = rpois(N, lambda)
+
+
+dens( y, adj=1.1, show.HPDI=T)
+```
+```{r}
+mean(y)
+```
+
+
+
+## 11M3. Logit link and binom linear model
+**Explain why the logit link is appropriate for a binomial generalized linear model.**
+
+The logit link transforms the linear model of the predictor variables into a value (p) between 0 and 1, such that it can be used in the binomial distribution.
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,2 @@
+"0",""
+"0","plot( log_gdp_std ~ rugged_std , data=d ) #scatterplot"

@@ -1,0 +1,6 @@
+"0",""
+"0",""
+"0","# scatter plot by  color for dummy variable 0/1 går ikke, men id 1/2 går."
+"0","# plot( log_gdp_std ~ rugged_std , data=d, col = cid) "
+"0",""
+"0",""

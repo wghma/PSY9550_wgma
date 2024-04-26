@@ -1,14 +1,14 @@
 {
-    "rmdVisualMode": "true",
+    "rmdVisualMode": "false",
     "rmdVisualWrapConfigured": "true",
     "tempName": "Untitled1",
     "source_window_id": "",
     "Source": "Source",
     "docOutlineVisible": "1",
     "rmdVisualCollapsedChunks": "",
-    "cursorPosition": "184,0",
-    "scrollLine": "187",
-    "rmdVisualModeLocation": "6876:3664.888916015625",
-    "docOutlineSize": "187",
-    "last_setup_crc32": "6d8aec8cf421191a"
+    "cursorPosition": "91,0",
+    "scrollLine": "1",
+    "rmdVisualModeLocation": "1907:900",
+    "docOutlineSize": "172",
+    "last_setup_crc32": "3cc1a316f421191a"
 }

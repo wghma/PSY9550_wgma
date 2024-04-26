@@ -1,0 +1,4 @@
+"0",""
+"0","pl <- by( d$pulled_left , list( d$actor , d$treatment ) , mean )"
+"0",""
+"0","plot( NULL , xlim=c(1,28) , ylim=c(0,1) , xlab="""" , ylab=""proportion left lever"" , xaxt=""n"" , yaxt=""n"" ) "

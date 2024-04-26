@@ -1,3 +1,0 @@
-"0","# testing the log distribution"
-"0","log_trekk <- -rlnorm(1e4, 0, 0.5)"
-"0","hist(log_trekk)"

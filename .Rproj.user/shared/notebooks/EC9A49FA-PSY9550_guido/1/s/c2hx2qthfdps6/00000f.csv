@@ -14,13 +14,13 @@ Attaching package: ‘rethinking’
 "
 "0","library(magrittr)"
 "0","library(tidyverse)"
-"2","── [1mAttaching core tidyverse packages[22m ────────────────────────────────────────────────────────────────────────────── tidyverse 2.0.0 ──
+"2","── [1mAttaching core tidyverse packages[22m ──────────────────────────── tidyverse 2.0.0 ──
 [32m✔[39m [34mdplyr    [39m 1.1.3     [32m✔[39m [34mreadr    [39m 2.1.4
 [32m✔[39m [34mforcats  [39m 1.0.0     [32m✔[39m [34mstringr  [39m 1.5.0
 [32m✔[39m [34mggplot2  [39m 3.4.3     [32m✔[39m [34mtibble   [39m 3.2.1
 [32m✔[39m [34mlubridate[39m 1.9.2     [32m✔[39m [34mtidyr    [39m 1.3.0
 [32m✔[39m [34mpurrr    [39m 1.0.2     "
-"2","── [1mConflicts[22m ──────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+"2","── [1mConflicts[22m ────────────────────────────────────────────── tidyverse_conflicts() ──
 [31m✖[39m [34mtidyr[39m::[32mextract()[39m   masks [34mmagrittr[39m::extract()
 [31m✖[39m [34mdplyr[39m::[32mfilter()[39m    masks [34mstats[39m::filter()
 [31m✖[39m [34mdplyr[39m::[32mlag()[39m       masks [34mstats[39m::lag()
@@ -28,7 +28,38 @@ Attaching package: ‘rethinking’
 [31m✖[39m [34mpurrr[39m::[32mset_names()[39m masks [34mmagrittr[39m::set_names()
 [36mℹ[39m Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors"
 "0","library(dagitty)"
-"0",""
+"0","library(rstan)"
+"2","Loading required package: StanHeaders
+"
+"2","
+rstan version 2.32.5 (Stan version 2.32.2)
+
+"
+"2","For execution on a local, multicore CPU with excess RAM we recommend calling
+options(mc.cores = parallel::detectCores()).
+To avoid recompilation of unchanged Stan programs, we recommend calling
+rstan_options(auto_write = TRUE)
+For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+change `threads_per_chain` option:
+rstan_options(threads_per_chain = 1)
+
+"
+"2","Do not specify '-march=native' in 'LOCAL_CPPFLAGS' or a Makevars file
+"
+"2","
+Attaching package: ‘rstan’
+
+"
+"2","The following object is masked from ‘package:tidyr’:
+
+    extract
+
+"
+"2","The following object is masked from ‘package:magrittr’:
+
+    extract
+
+"
 "0","Sys.setlocale(""LC_ALL"", 'en_US.UTF-8')"
 "1","[1]"
 "1"," ""LC_COLLATE=en_US.UTF-8;LC_CTYPE=en_US.UTF-8;LC_MONETARY=en_US.UTF-8;LC_NUMERIC=C;LC_TIME=en_US.UTF-8"""
