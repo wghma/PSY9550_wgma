@@ -1,0 +1,5 @@
+"0",""
+"0","# Add beta distributions with different thetas"
+"0","for (i in 2:length(thetas)) {"
+"0","  lines(x, dbeta(x, pbar, thetas[i]), col = colors[i])"
+"0","}"

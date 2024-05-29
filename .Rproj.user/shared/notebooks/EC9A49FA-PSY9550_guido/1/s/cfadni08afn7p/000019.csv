@@ -1,0 +1,2 @@
+"0",""
+"0","abline( h=min(d_rugged$log_gdp_std) , lty=2 ) "

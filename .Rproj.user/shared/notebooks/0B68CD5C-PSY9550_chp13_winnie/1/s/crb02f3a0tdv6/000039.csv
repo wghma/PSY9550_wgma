@@ -1,0 +1,4 @@
+"0","par(mfrow = c(1, length(model_list)))"
+"0","plot( propsurv ~ pred , data=d ,"
+"0","      xlab = ""predator. 1 = no, 2 = yes"", ylab= ""proportion survival"","
+"0","      main = ""variations among ponds"")"

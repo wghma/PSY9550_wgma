@@ -1,0 +1,6 @@
+"0","post <- extract.samples(m12.1)"
+"0","post$diff_a <- post$a[,1] - post$a[,2] "
+"0","precis( post , depth=2 )"
+"1","ulam posterior: 2000 samples from object"
+"1","
+"

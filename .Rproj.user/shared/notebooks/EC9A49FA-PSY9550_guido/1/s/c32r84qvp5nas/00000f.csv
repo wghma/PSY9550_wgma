@@ -1,0 +1,6 @@
+"0","post <- extract.samples( m11.14 ) "
+"0","post$D <- exp(post$a) "
+"0","precis( post , 2 )"
+"1","ulam posterior: 2000 samples from object"
+"1","
+"

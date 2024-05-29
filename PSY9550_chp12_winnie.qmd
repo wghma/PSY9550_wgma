@@ -1,0 +1,147 @@
+---
+title: "PSY9550 2024 exercises for chapter 12"
+author: "Winnie"
+date: 05-01-2024
+format:
+  html:
+    toc: true
+    toc-location: left
+    embed-resources: true
+    page-layout: full
+    html-math-method: katex
+editor: source
+---
+
+```{css, echo = F}
+body{
+  font-family: Helvetica;
+  font-size: 16pt;
+  max-width: 1000px;
+  margin: auto;
+  margin-left:310px;
+}
+pre{
+  font-size: 14px;
+}
+/* Headers */
+h1{
+    font-size: 24pt;
+  }
+h1,h2{
+    font-size: 20pt;
+  }
+h3,h4,h5,h6{
+  font-size: 18pt;
+}
+#TOC {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  overflow:auto;
+}
+```
+
+```{r setup,}
+#| include: false
+#| message: false
+#| warning: false
+#| results: hide
+knitr::opts_chunk$set(echo = TRUE, dpi = 300)
+
+library(rethinking)
+library(magrittr)
+library(tidyverse)
+library(rstan)
+library(bayesplot)
+
+Sys.setlocale("LC_ALL", 'en_US.UTF-8')
+# add other packages you use here
+```
+
+# Clarification and or discussion questions
+
+
+# Easy
+
+
+## 12E1. What is the difference between an ordered categorical variable and an unordered one? Define and then give an example of each.
+
+What is common between the ordered and unordered categorical variable is that they both have a range of values that are categorical, but the unordered one does not assign any relative value between them. An example of a unordered categorical variable could be categories of flower types, while an ordered variable could for example be military grades a person can reach or Likert scale answers.
+
+
+
+## 12E2. What kind of link function does an ordered logistic regression employ? How does it differ from an ordinary logit link? 
+
+The ordered logistic regression (with outcome being an ordered categorical variable) uses a logit link that results in log-odds, while ordinary logistic regression uses a cumulative logit that results in log-cumulative-odds. They differ in what value x that is put into logit(x) while calculating the log-odds, for ordered regression x is the cumulative proportions of the ordered categories, while for the ordinary logit regression the x is the proportation p.
+
+Usually ordered logit may predict an multi-categorical outcome, while the ordinary logit regression has a binomial outcome.
+
+## 12E3. When count data are zero-inflated, using a model that ignores zero-inflation will tend to induce which kind of inferential error? 
+
+A zero-inflated model often have several processes/mechanisms behind the count, one explaining if there is going to be zero or more-than-zero counts (lets say it is a start/nostart variable), and thereafter a process that affects the magnitude of counts when the observation has been decided/processed to be non-zero (lets call it production variable). Making a model that does not take into account more of the processes/mechanisms behind the zeros (start/nostart) will estimate a low-explaination model that will account the huge amount of zeros to the production-variable and therefor underestimate the prediction of counts resulted from the production variable. Also, it may falsely paint a picture that making changes in the production variable may change the counts, while in reality the start/nostart variable would have a more significant influence
+
+## 12E4. Over-dispersion is common in count data. Give an example of a natural process that might produce over-dispersed counts. Can you also give an example of a process that might produce underdispersed counts?
+
+Over-dispersion:
+Number of trips per person per day. It is known that the expected value for number of daily trips are about 3.2, but the variation is larger than this, as there are a smaller portion of people who have lots of trips due to very different mechanisms (like working as a carrier or home nurse)
+
+
+Under-dispersion: 
+Hmm?? The number of buses that pass Nationalteateret within a 3 minuted period during rush hour. In this period they are basically tailgaiting each other, and the road is maxed with buses, putting a certain cap on how many buses that can pass in within 3 minutes. Also, the bus departing rates are set very high during rush, setting a high low-estimate on the counts. There must be an event of some sort happening that may introduce a big influence on these counts (like road construction, sport event, American president visiting).
+
+
+# Medium
+
+
+## 12M1. At a certain university, employees are annually rated from 1 to 4 on their productivity, with 1 being least productive and 4 most productive. In a certain department at this certain university in a certain year, the numbers of employees receiving each rating were (from 1 to 4): 12, 36, 7, 41. Compute the log cumulative odds of each rating. 
+
+I assume the ratings cannot be transformed into a continuos variable, and what we only know is that the order of the ratings are 7, 12, 36, 41.
+
+So the frequency per rating is 1, making each proportion 25%.
+We then calculate the log-cumulative-odds:
+```{r}
+ cumul_per_rating <- cumsum(rep(0.25, 4))
+log_cumul_odds <- logit(cumul_per_rating) # Inf because log(1/(1-1)) = Inf.
+
+log_cumul_odds
+```
+
+
+
+## 12M2. Make a version of Figure 12.5 for the employee ratings data given just above. 
+
+Hmm, not sure how to plot the blue lines...and if i have understood the assignment. There is only 4 individuals in our sample??
+
+
+```{r}
+
+
+
+dat <- data.frame(scores = c(7,12,36,41)) %>% 
+  tibble() %>% 
+  mutate( 
+   scores = c(7,12,36,41),
+   scores_fac = factor(scores, levels = c(7,12,36,41)),
+   # scores =  paste0("Score: ", c(7,12,36,41)),
+  cumul_per_rating = cumul_per_rating,
+  likelihood = inv_logit(log_cumul_odds)-lag(cumul_per_rating)
+ )
+ 
+dat %>% 
+  ggplot(aes(x = scores_fac)) +
+  geom_col(aes(y = cumul_per_rating))
+  
+```
+
+
+## 12M3. Can you modify the derivation of the zero-inflated Poisson distribution (ZIPoisson) from the chapter to construct a zero-inflated binomial distribution?
+
+
+
+
+
+
+
+

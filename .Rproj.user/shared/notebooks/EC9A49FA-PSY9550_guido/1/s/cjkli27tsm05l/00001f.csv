@@ -1,0 +1,7 @@
+"0",""
+"0","# draw 50 beta distributions sampled from posterior "
+"0","for ( i in 1:50 ) { "
+"0","  p <- logistic( post$a[i,gid] ) "
+"0","  theta <- post$theta[i] "
+"0","  curve( dbeta2(x,p,theta) , add=TRUE , col=col.alpha(""blue"",0.2) ) "
+"0","} "

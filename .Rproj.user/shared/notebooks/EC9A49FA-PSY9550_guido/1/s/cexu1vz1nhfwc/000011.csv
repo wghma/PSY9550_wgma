@@ -1,0 +1,6 @@
+"0","pbar <- 0.5 "
+"0","theta <- 5"
+"0",""
+"0","curve( dbeta2(x,pbar,theta) , "
+"0","       from=0 , to=1 ,"
+"0","       xlab=""probability"" , ylab=""Density"" )"

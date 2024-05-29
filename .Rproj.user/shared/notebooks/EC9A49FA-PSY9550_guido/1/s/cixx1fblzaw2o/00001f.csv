@@ -1,0 +1,4 @@
+"0",""
+"0","# Add a legend to the plot"
+"0","legend(""topright"", legend = paste(""Theta ="", thetas), col = colors, lty = 1, title = ""Legend"")"
+"0",""
